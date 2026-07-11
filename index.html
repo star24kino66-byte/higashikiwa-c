@@ -798,6 +798,9 @@ function applyStatsUpdate(newData, fileName){
   const m3=document.getElementById('newPwMsg3');
   if(m2)m2.style.display='block';
   if(m3)m3.style.display='none';
+  if(confirm('成績データを反映しました。この内容をHTMLファイルとして出力しますか？\n（出力してGitHub Pagesにアップロードするまで、他の端末には反映されません）')){
+    exportHtml();
+  }
 }
 
 // 今表示している状態（SITEDATA・パスワード込み）をHTMLファイルとして出力する
@@ -1596,6 +1599,9 @@ function handleRunXlsx(file){
           buildRunLineChart(key,canvasId,legendId,d);
         }
       });
+      if(confirm('走塁タイムを反映しました。この内容をHTMLファイルとして出力しますか？\n（出力してGitHub Pagesにアップロードするまで、他の端末には反映されません）')){
+        exportHtml();
+      }
     }catch(err){
       var el=document.getElementById('run-err');
       if(el){el.textContent='読み込みエラー: '+err.message;el.style.display='block';}
