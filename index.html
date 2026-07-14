@@ -633,68 +633,20 @@ tr:hover td{background:rgba(255,255,255,.03)}
 
     <!-- チーム分析 -->
     <div id="ai-tab-comment">
-      <div id="ai-comment-empty" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; color: var(--muted); font-size: 13px; text-align: center; display: none;">データ更新時にAIコメントが自動生成されます</div>
-      <div id="ai-comment-result" style="display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap;">【現状解説】
-23試合を消化し、チーム打率.346・出塁率.508・OPS.965と、前回集計（打率.337・OPS.930）からさらに数字を伸ばした。盗塁も174→202とチームの生命線である機動力野球がいっそう加速している。直近5試合もチーム打率.379・OPS1.096と高水準を維持し、投手陣もWHIPが4.803→4.617、失点率が13.928→12.466へ改善するなど、打・投とも良い流れが続いている。6/27の恩田戦は2連敗（0-10、2-12）となったが、7/11の原ﾀｲｶﾞｰｽ戦（9-8）・岬戦（9-6）はいずれも接戦を制して連勝しており、直近の勢いを取り戻している。今鶴陸を筆頭に森畑葵斗・今鶴蒼大・大田結愛が大きく数字を伸ばし、チーム全体の底上げが着実に進んでいる。
-
-【ストロングポイント】
-・機動力野球の深化：盗塁202はチームの生命線。岸根汐音（出塁率.609）、今鶴陸（.729）、井藤大翔（.542）ら出塁率の高い選手が多く、走者を常に進められている。
-・複数選手の同時ブレイク：大田結愛はOPS.806→.983、今鶴蒼大は1.012→1.156、森畑葵斗は1.080→1.190と、一部選手に依存しない打線の厚みが増している。
-・接戦を勝ち切る力：7/11の原ﾀｲｶﾞｰｽ戦・岬戦はともに1点差・3点差の接戦を制しており、僅差の展開でも崩れない粘り強さが備わってきている。
-
-【課題】
-・チームWHIPは3.982→4.018とわずかに悪化。四死球が多く、コントロール強化は継続テーマ。特に豊田晃紳（WHIP12.121、投球回0.66）は経験を積みながらの改善が必要。
-・森畑遥斗（OPS1.059→1.006）、村上涼真（.628→.593）、中野樹（.664→.647）、岸根汐音（.850→.823）はわずかに数字を落としており、フォームの微調整が有効。
-・6/27の恩田戦（0-10、2-12）は大差の連敗となった。7/11に見せた接戦の強さを、格上相手にも発揮できるかが次の課題。</div>
+      <div id="ai-comment-empty" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;color:var(--muted);font-size:13px;text-align:center">データ更新時にAIコメントが自動生成されます</div>
+      <div id="ai-comment-result" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap"></div>
     </div>
 
     <!-- 打順アドバイス -->
     <div id="ai-tab-order" style="display:none">
-      <div id="ai-order-empty" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; color: var(--muted); font-size: 13px; text-align: center; display: none;">データ更新時にAIコメントが自動生成されます</div>
-      <div id="ai-order-result" style="display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap;">1番　今鶴 陸
-出塁率.729・盗塁43はチーム断トツ。直近もOPS1.333と高水準を維持し、不動のトップバッター。
-
-2番　森畑 葵斗
-打率.452・OPS1.190に加え直近OPS2.143と絶好調。チーム最高の勢いで返す役割も担う。
-
-3番　今鶴 蒼大
-出塁率.556・OPS1.156、直近もOPS1.750と大きく調子を上げている。長打力も光る中軸候補。
-
-4番　森畑 遥斗
-OPS1.006とチーム上位の長打力。直近はやや落ち着いているが勝負強さは健在で本塁打も持つ。
-
-5番　大田 結愛
-打率.333・出塁率.538に加え直近OPS1.950と急上昇。出塁とチャンスメイクを両立できる存在。
-
-6番　井藤 大翔
-出塁率.542はチーム上位。安定して出塁できる選手として下位から上位へつなぐ役割。
-
-7番　豊田 晃紳
-出塁率.571・盗塁18とバランス型。粘り強い打撃でチャンスを広げる。
-
-8番　岸根 汐音
-出塁率.609はチーム最高水準。打率は.214とコンタクトに課題があるが、選球眼でチャンスを作る。
-
-9番　中野 樹
-全試合出場の経験値が武器。打率.194とやや苦しいが、盗塁17と機動力で貢献し1番へつなぐ。
-
-【控え選手の起用法】
-木綿谷 昇汰：投球回17.67はチーム最多。WHIP3.282と安定感があり、先発の柱として起用継続。
-田中 斗岐：出場は3試合のみだがWHIP2.248・K/BB3.0と制球力は際立つ。出場機会を増やし経験を積ませたい。
-大田 笑愛：シーズン通算は苦しいが、工藤蓮大同様これから出場機会を積み重ねる段階。守備・代走から起用。
-村上 涼真：出塁率.450と選球眼は評価できる一方、直近は打率.000と苦しい。コンタクト重視の調整を。
-清水 佑一郎・林 颯心・工藤 蓮大：出場機会はまだ限定的。守備固め・代走・代打で経験を積みながら底上げを図る。
-
-チームの基本方針は出塁率の高い選手を切れ目なく並べ、盗塁202という機動力を最大限に活かす打線構成。直近絶好調の森畑葵斗・今鶴蒼大・大田結愛を中軸に配置し、得点力を最大化する。</div>
+      <div id="ai-order-empty" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;color:var(--muted);font-size:13px;text-align:center">データ更新時にAIコメントが自動生成されます</div>
+      <div id="ai-order-result" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap"></div>
     </div>
 
     <!-- 選手コメント -->
     <div id="ai-tab-player" style="display:none">
-      <div id="ai-player-empty" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; color: var(--muted); font-size: 13px; text-align: center; display: none;">データ更新時にAIコメントが自動生成されます</div>
-      <div id="ai-player-result" style="display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;"><div style="border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'" style="padding:10px 14px;background:var(--surface2);cursor:pointer;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center">
-          <span>今鶴 陸</span><span style="font-size:11px;color:var(--muted)">▼</span>
-        </div>
+      <div id="ai-player-empty" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;color:var(--muted);font-size:13px;text-align:center">データ更新時にAIコメントが自動生成されます</div>
+      <div id="ai-player-result" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word"></div>
         <div style="display:block;padding:12px 14px;font-size:13px;line-height:1.7;white-space:pre-wrap">【現状】打率.65・出塁率.729・OPS1.529はチーム断トツの成績。盗塁43も圧巻で、23試合すべてに出場している。直近もOPS1.333と高水準を維持。投手としては投球回12.0・WHIP3.0・失点率10.333と、エース格として安定した内容を残している。
 【ストロング】圧倒的なコンタクト力と出塁力で、常に得点圏へ進める機動力の中心。投手としてもK/BB1.056と与四死球と奪三振のバランスが取れており、打・投どちらでもチームを牽引できる存在。
 【課題】これだけの成績を残しながらも、さらなる長打力の上乗せができればチーム全体の得点力が一段階上がる。投手としては失点率をさらに一桁台へ抑えたい。</div>
