@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
+<html lang="ja"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>東岐波 C級 チームサイト</title>
@@ -160,7 +158,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
   th,td{padding:5px 7px;font-size:11px}
 }
 </style>
-</head>
+<style id="trend-btn-style-batting-chart-section">#batting-chart-section button.active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;}</style><style id="trend-btn-style-pitching-chart-section">#pitching-chart-section button.active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;}</style></head>
 <body>
 
 <!-- ========== パスワード画面 ========== -->
@@ -178,7 +176,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
 </div>
 
 <!-- ========== 更新画面 ========== -->
-<div id="updateScreen">
+<div id="updateScreen" style="display: flex;">
   <h2>📂 データ更新</h2>
   <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:580px">
     <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px">
@@ -199,7 +197,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
         <p><strong>ベースランニングExcel</strong></p>
         <p style="font-size:11px;margin-top:4px;font-family:var(--mono)">クリックまたはドロップ</p>
       </div>
-      <p id="run-update-info" style="font-size:11px;color:var(--good);text-align:center;display:none"></p>
+      <p id="run-update-info" style="font-size: 11px; color: var(--good); text-align: center; display: block;">✓ 260719ﾍﾞｰｽﾗﾝﾆﾝｸﾞﾀｲﾑ管理表.xlsx</p>
     </div>
   </div>
   <button class="close-update" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="exportHtml()">⬇ このHTMLを出力</button>
@@ -207,7 +205,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
     <strong style="color:var(--text)">💡 AI分析（チーム総評・打順アドバイス・選手コメント）が必要なとき</strong><br>
     ① 成績まとめExcelをドロップしてスタッツを最新化 → ② 上の「HTMLを出力」でファイルをダウンロード → ③ そのExcelとHTMLの両方をClaude(claude.ai)に送り「AI分析を追加してください」と伝える → ④ AI分析ページ付きの完成版HTMLが返ってきます。
   </div>
-  <div id="newPwBox">
+  <div id="newPwBox" style="display: none;">
     <p id="newPwMsg1" style="font-size:13px;color:var(--muted)">新しいパスワード（LINEで共有してください）</p>
     <div class="pw-display" id="newPwDisplay"></div>
     <p id="newPwMsg2">画面はこのまま更新済みです。忘れずに「HTMLを出力」して保存してください</p>
@@ -217,52 +215,298 @@ tr:hover td{background:rgba(255,255,255,.03)}
 </div>
 
 <!-- ========== メインアプリ ========== -->
-<div id="app">
+<div id="app" style="display:none">
   <nav>
     <div class="nav-brand">東岐波<span>C級</span></div>
-    <div class="nav-item active" onclick="showPage('results')">試合結果</div>
+    <div class="nav-item" onclick="showPage('results')">試合結果</div>
     <div class="nav-item" onclick="showPage('batting')">打撃スタッツ</div>
     <div class="nav-item" onclick="showPage('pitching')">投手スタッツ</div>
     <div class="nav-item" onclick="showPage('players')">選手一覧</div>
     <div class="nav-item" onclick="showPage('running')">走塁タイム</div>
-    <div class="nav-item" onclick="showPage('ai')">🤖 AI分析</div>
+    <div class="nav-item active" onclick="showPage('ai')">🤖 AI分析</div>
     <button class="nav-update" onclick="openUpdate()">データ更新</button>
   </nav>
 
   <!-- 試合結果 -->
-  <div class="page active" id="page-results">
+  <div class="page" id="page-results">
     <p class="page-title">2026年 試合結果</p>
-    <p class="page-sub" id="results-sub"></p>
-    <div class="summary-grid" id="results-summary"></div>
+    <p class="page-sub" id="results-sub">27試合 / 更新日: 2026/7/20</p>
+    <div class="summary-grid" id="results-summary">
+    <div class="s-card"><div class="s-label">試合数</div><div class="s-val" style="color:var(--accent)">27</div></div>
+    <div class="s-card"><div class="s-label">勝利</div><div class="s-val" style="color:var(--good)">10</div></div>
+    <div class="s-card"><div class="s-label">敗戦</div><div class="s-val" style="color:var(--bad)">16</div></div>
+    <div class="s-card"><div class="s-label">引分</div><div class="s-val" style="color:var(--draw)">1</div></div>
+    <div class="s-card"><div class="s-label">総得点</div><div class="s-val">163</div></div>
+    <div class="s-card"><div class="s-label">総失点</div><div class="s-val">215</div></div>
+  </div>
     <div class="tbl-wrap"><table id="results-table">
       <thead><tr><th>No</th><th>日付</th><th>大会/試合</th><th>場所</th><th>対戦相手</th><th>勝敗</th><th>得点</th><th>失点</th><th>備考</th></tr></thead>
-      <tbody></tbody>
+      <tbody><tr>
+      <td>1</td><td>01/31</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">藤山</td>
+      <td class="loss">●</td>
+      <td>3</td><td>5</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>2</td><td>01/31</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">藤山</td>
+      <td class="loss">●</td>
+      <td>2</td><td>8</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>3</td><td>02/23</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">常盤・琴芝</td>
+      <td class="loss">●</td>
+      <td>8</td><td>9</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>4</td><td>02/23</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">常盤・琴芝</td>
+      <td class="loss">●</td>
+      <td>8</td><td>11</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>5</td><td>03/08</td>
+      <td class="td-left">太陽家具杯</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="loss">●</td>
+      <td>5</td><td>6</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>6</td><td>03/21</td>
+      <td class="td-left">幸太郎杯</td>
+      <td>東部G</td>
+      <td class="td-left">常盤・琴芝</td>
+      <td class="loss">●</td>
+      <td>2</td><td>3</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>7</td><td>03/21</td>
+      <td class="td-left">幸太郎杯</td>
+      <td>東部G</td>
+      <td class="td-left">藤山</td>
+      <td class="loss">●</td>
+      <td>4</td><td>9</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>8</td><td>03/28</td>
+      <td class="td-left">幸太郎杯</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="loss">●</td>
+      <td>4</td><td>10</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>9</td><td>03/29</td>
+      <td class="td-left">幸太郎杯</td>
+      <td>東部G</td>
+      <td class="td-left">厚東・西宇部・原</td>
+      <td class="win">○</td>
+      <td>9</td><td>0</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>10</td><td>03/29</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="win">○</td>
+      <td>6</td><td>5</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>11</td><td>04/11</td>
+      <td class="td-left">毎日新聞杯</td>
+      <td>東部G</td>
+      <td class="td-left">厚東・西宇部・原</td>
+      <td class="win">○</td>
+      <td>12</td><td>1</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>12</td><td>04/12</td>
+      <td class="td-left">毎日新聞杯</td>
+      <td>東部G</td>
+      <td class="td-left">藤山</td>
+      <td class="loss">●</td>
+      <td>6</td><td>15</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)">準優勝</td>
+    </tr><tr>
+      <td>13</td><td>04/26</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">華城</td>
+      <td class="win">○</td>
+      <td>3</td><td>2</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)">雨天コールド</td>
+    </tr><tr>
+      <td>14</td><td>05/02</td>
+      <td class="td-left">協議会杯</td>
+      <td>東部G</td>
+      <td class="td-left">常盤・琴芝</td>
+      <td class="loss">●</td>
+      <td>6</td><td>10</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>15</td><td>05/02</td>
+      <td class="td-left">練習試合</td>
+      <td>亀浦G</td>
+      <td class="td-left">常盤・琴芝</td>
+      <td class="loss">●</td>
+      <td>5</td><td>11</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>16</td><td>05/16</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">高千帆</td>
+      <td class="win">○</td>
+      <td>8</td><td>6</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>17</td><td>05/16</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">高千帆</td>
+      <td class="loss">●</td>
+      <td>3</td><td>11</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>18</td><td>05/31</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">川中西</td>
+      <td class="win">○</td>
+      <td>12</td><td>7</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>19</td><td>05/31</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">川中西</td>
+      <td class="draw">＝</td>
+      <td>7</td><td>7</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>20</td><td>06/27</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="loss">●</td>
+      <td>0</td><td>10</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>21</td><td>06/27</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="loss">●</td>
+      <td>2</td><td>12</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>22</td><td>07/11</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">原タイガース</td>
+      <td class="win">○</td>
+      <td>9</td><td>8</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>23</td><td>07/11</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">岬</td>
+      <td class="win">○</td>
+      <td>9</td><td>6</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>24</td><td>07/12</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">高千帆</td>
+      <td class="loss">●</td>
+      <td>0</td><td>11</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>25</td><td>07/12</td>
+      <td class="td-left">練習試合</td>
+      <td>岐波G</td>
+      <td class="td-left">高千帆</td>
+      <td class="win">○</td>
+      <td>10</td><td>10</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)">タイブレーク後
+じゃんけん勝ち</td>
+    </tr><tr>
+      <td>26</td><td>07/20</td>
+      <td class="td-left">セントラル硝子杯</td>
+      <td>東部G</td>
+      <td class="td-left">恩田</td>
+      <td class="loss">●</td>
+      <td>5</td><td>10</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr><tr>
+      <td>27</td><td>07/20</td>
+      <td class="td-left">練習試合</td>
+      <td>東部G</td>
+      <td class="td-left">神原・新川</td>
+      <td class="win">○</td>
+      <td>15</td><td>12</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)"></td>
+    </tr></tbody>
     </table></div>
   </div>
 
   <!-- チームスタッツ -->
   <div class="page" id="page-batting">
     <p class="page-title">打撃スタッツ</p>
-    <p class="page-sub" id="batting-sub"></p>
+    <p class="page-sub" id="batting-sub">全27試合</p>
     <div class="tab-row">
       <button class="tab active" onclick="switchBatting('all',this)">シーズン全体</button>
       <button class="tab" onclick="switchBatting('recent',this)">直近スタッツ</button>
     </div>
-    <div id="batting-table-section"></div>
+    <div id="batting-table-section">
+    <div style="margin-bottom:8px">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--surface2)">選手名</th><th>試合数</th><th>打席数</th><th>打数</th><th>安打</th><th>打率</th><th>単打</th><th>二塁打</th><th>三塁打</th><th>本塁打</th><th>打点</th><th>得点</th><th>四死球</th><th>三振</th><th>犠打</th><th>犠飛</th><th>盗塁</th><th>その他出塁</th><th>出塁率</th><th>長打率</th><th>OPS</th><th>三振率</th></tr></thead>
+        <tbody>
+          <tr style="background:rgba(79,142,247,0.08)">
+            <td class="td-left" style="position:sticky;left:0;z-index:1;background:rgba(25,28,45,0.98);color:var(--accent);font-weight:600">チーム計</td>
+            <td style="color:var(--accent);font-weight:600">27</td><td style="color:var(--accent);font-weight:600">502</td><td style="color:var(--accent);font-weight:600">380</td><td style="color:var(--accent);font-weight:600">132</td><td style="color:var(--accent);font-weight:600">0.347</td><td style="color:var(--accent);font-weight:600">105</td><td style="color:var(--accent);font-weight:600">16</td><td style="color:var(--accent);font-weight:600">4</td><td style="color:var(--accent);font-weight:600">7</td><td style="color:var(--accent);font-weight:600">48</td><td style="color:var(--accent);font-weight:600">162</td><td style="color:var(--accent);font-weight:600">112</td><td style="color:var(--accent);font-weight:600">135</td><td style="color:var(--accent);font-weight:600">0</td><td style="color:var(--accent);font-weight:600">0</td><td style="color:var(--accent);font-weight:600">254</td><td style="color:var(--accent);font-weight:600">10</td><td style="color:var(--accent);font-weight:600">0.516</td><td style="color:var(--accent);font-weight:600">0.466</td><td style="color:var(--accent);font-weight:600">0.982</td><td style="color:var(--accent);font-weight:600">0.269</td>
+          </tr>
+          <tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">今鶴 陸</td><td class="top1">27</td><td class="top1">56</td><td class="top2">46</td><td class="top1">28</td><td class="top1">0.609<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="top1">24</td><td class="top2">3</td><td class="">0</td><td class="top3">1</td><td class="top1">9</td><td class="top1">31</td><td class="">10</td><td class="">6</td><td class="top1">0</td><td class="top1">0</td><td class="top1">46<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="top3">1</td><td class="top1">0.696<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="top2">0.739</td><td class="top1">1.436<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="bad-top2">0.107<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">田中 斗岐</td><td class="">3</td><td class="">7</td><td class="">6</td><td class="">2</td><td class="">0.333</td><td class="">2</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">1</td><td class="">1</td><td class="bad-top1">0</td><td class="top2">0</td><td class="top2">0</td><td class="">2</td><td class="">0</td><td class="">0.429</td><td class="">0.333</td><td class="">0.762</td><td class="bad-top1">0.000</td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">森畑 遥斗</td><td class="top2">27</td><td class="top3">49</td><td class="top3">43</td><td class="top3">17</td><td class="">0.395<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="top3">12</td><td class="top3">3</td><td class="">0</td><td class="top2">2</td><td class="top2">9</td><td class="top3">18</td><td class="">6</td><td class="">11</td><td class="top3">0</td><td class="top3">0</td><td class="">19<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0</td><td class="">0.469<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="top3">0.605</td><td class="">1.074<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.224<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">大田 結愛</td><td class="">26</td><td class="">49</td><td class="">34</td><td class="">12</td><td class="">0.353<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">10</td><td class="">1</td><td class="top2">1</td><td class="">0</td><td class="">4</td><td class="">17</td><td class="top1">15</td><td class="">14</td><td class="">0</td><td class="">0</td><td class="top3">24<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0</td><td class="">0.551<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.441</td><td class="">0.992<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.286<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">木綿谷 昇汰</td><td class="">25</td><td class="">32</td><td class="">28</td><td class="">5</td><td class="">0.179<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">4</td><td class="">1</td><td class="">0</td><td class="">0</td><td class="">1</td><td class="">7</td><td class="">4</td><td class="">12</td><td class="">0</td><td class="">0</td><td class="">11<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">1</td><td class="">0.312<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.214</td><td class="">0.527<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.375<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">井藤 大翔</td><td class="">25</td><td class="">27</td><td class="">21</td><td class="">7</td><td class="">0.333<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">6</td><td class="">1</td><td class="">0</td><td class="">0</td><td class="">4</td><td class="">8</td><td class="">6</td><td class="">10</td><td class="">0</td><td class="">0</td><td class="">18<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">1</td><td class="">0.519<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.381</td><td class="">0.899<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.370<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">村上 涼真</td><td class="">25</td><td class="">24</td><td class="">16</td><td class="">2</td><td class="">0.125<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">2</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">2</td><td class="">8</td><td class="">8</td><td class="">7</td><td class="">0</td><td class="">0</td><td class="">9<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">1</td><td class="">0.458<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.125</td><td class="">0.583<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.292<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">林 颯心</td><td class="">19</td><td class="">8</td><td class="">7</td><td class="">0</td><td class="">0.000</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">1</td><td class="">7</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0.125<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.000</td><td class="">0.125<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.875<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">清水 佑一郎</td><td class="">15</td><td class="">7</td><td class="">5</td><td class="">0</td><td class="">0.000</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">1</td><td class="">2</td><td class="bad-top3">4</td><td class="">0</td><td class="">0</td><td class="">1<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0</td><td class="">0.286<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.000</td><td class="">0.286<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0.571<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">中野 樹</td><td class="top3">27</td><td class="">49</td><td class="">41</td><td class="">8</td><td class="">0.195<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">6</td><td class="">1</td><td class="">0</td><td class="">1</td><td class="">4</td><td class="">12</td><td class="">8</td><td class="">13</td><td class="">0</td><td class="">0</td><td class="">19<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="top1">2</td><td class="">0.367<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.293</td><td class="">0.660<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.265<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">森畑 葵斗</td><td class="">27</td><td class="top2">56</td><td class="top1">53</td><td class="top2">26</td><td class="top2">0.491<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="top2">17</td><td class="top1">4</td><td class="top1">2</td><td class="top1">3</td><td class="top3">8</td><td class="top2">21</td><td class="">3</td><td class="">12</td><td class="">0</td><td class="">0</td><td class="top2">25<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">1</td><td class="">0.536<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="top1">0.811</td><td class="top2">1.347<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.214<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">今鶴 蒼大</td><td class="">27</td><td class="">38</td><td class="">25</td><td class="">10</td><td class="top3">0.400<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">7</td><td class="">2</td><td class="top3">1</td><td class="">0</td><td class="">2</td><td class="">11</td><td class="top2">13</td><td class="">6</td><td class="">0</td><td class="">0</td><td class="">21<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0</td><td class="top3">0.605<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.560</td><td class="top3">1.165<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="bad-top3">0.158<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">大田 笑愛</td><td class="">27</td><td class="">29</td><td class="">20</td><td class="">3</td><td class="">0.150<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">3</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">3</td><td class="">4</td><td class="">9</td><td class="">9</td><td class="">0</td><td class="">0</td><td class="">15<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">0</td><td class="">0.414<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.150</td><td class="">0.564<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.310<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">岸根 汐音</td><td class="">27</td><td class="">30</td><td class="">17</td><td class="">4</td><td class="">0.235<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">4</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">10</td><td class="top3">13</td><td class="">11</td><td class="">0</td><td class="">0</td><td class="">19<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="top2">2</td><td class="top2">0.633<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.235</td><td class="">0.869<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.367<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">豊田 晃紳</td><td class="">27</td><td class="">36</td><td class="">25</td><td class="">8</td><td class="">0.320<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">8</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">2</td><td class="">13</td><td class="">11</td><td class="">10</td><td class="">0</td><td class="">0</td><td class="">24<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">1</td><td class="">0.556</td><td class="">0.320</td><td class="">0.876</td><td class="">0.278<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">工藤 蓮大</td><td class="">12</td><td class="">5</td><td class="">3</td><td class="">0</td><td class="">0.000</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">0</td><td class="">2</td><td class="bad-top2">3</td><td class="">0</td><td class="">0</td><td class="">1</td><td class="">0</td><td class="">0.400<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.000</td><td class="">0.400<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">0.600<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr></tbody>
+      </table></div>
+    </div></div>
     <p style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)">※ <span style="color:var(--good);font-weight:700">↑</span>改善傾向 <span style="color:var(--bad);font-weight:700">↓</span>下落傾向（全体↔直近5試合 比較、3%以上の変化のみ表示）</p>
-    <div id="batting-chart-section" style="margin-top:8px"></div>
+    <div id="batting-chart-section" style="margin-top:8px"><div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;"><button class="" style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">打率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">出塁率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">長打率</button><button class="active" style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">OPS</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">三振率</button></div><div class="chart-card"><h3 style="font-size: 13px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><span>OPS 推移</span><span class="badge good" style="margin-left: 8px;">▲ 高いほど良い</span></h3><div class="team-pill"><span class="pill-line"></span>チーム全体（白太線）</div><div class="legend" style="margin-bottom: 8px;"><span class="leg"><span class="leg-sw" style="background:#4f8ef7"></span>中野 樹</span><span class="leg"><span class="leg-sw" style="background:#f76b6b"></span>井藤 大翔</span><span class="leg"><span class="leg-sw" style="background:#34d17a"></span>今鶴 蒼大</span><span class="leg"><span class="leg-sw" style="background:#f7c34f"></span>今鶴 陸</span><span class="leg"><span class="leg-sw" style="background:#b07ef7"></span>大田 笑愛</span><span class="leg"><span class="leg-sw" style="background:#4fd1d9"></span>大田 結愛</span><span class="leg"><span class="leg-sw" style="background:#f7944f"></span>岸根 汐音</span><span class="leg"><span class="leg-sw" style="background:#a3e635"></span>工藤 蓮大</span><span class="leg"><span class="leg-sw" style="background:#f76be8"></span>木綿谷 昇汰</span><span class="leg"><span class="leg-sw" style="background:#7fb4f7"></span>村上 涼真</span><span class="leg"><span class="leg-sw" style="background:#f76b9a"></span>林 颯心</span><span class="leg"><span class="leg-sw" style="background:#34d1b0"></span>森畑 葵斗</span><span class="leg"><span class="leg-sw" style="background:#f7e34f"></span>森畑 遥斗</span><span class="leg"><span class="leg-sw" style="background:#c97ef7"></span>清水 佑一郎</span><span class="leg"><span class="leg-sw" style="background:#7af76b"></span>田中 斗岐</span><span class="leg"><span class="leg-sw" style="background:#f7a34f"></span>豊田 晃紳</span></div><div style="position: relative; width: 100%; height: 260px;"><canvas id="cv_batting-chart-section" style="box-sizing: border-box; display: block; height: 260px; width: 886px;" width="886" height="260"></canvas></div><p style="font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--mono);">※ 各点はその日までの全試合累積値。凡例クリックで表示切替。</p></div></div>
   </div>
 
   <div class="page" id="page-pitching">
     <p class="page-title">投手スタッツ</p>
-    <p class="page-sub" id="pitching-sub"></p>
+    <p class="page-sub" id="pitching-sub">直近 5 試合</p>
     <div class="tab-row">
-      <button class="tab active" onclick="switchPitching('all',this)">シーズン全体</button>
-      <button class="tab" onclick="switchPitching('recent',this)">直近スタッツ</button>
+      <button class="tab" onclick="switchPitching('all',this)">シーズン全体</button>
+      <button class="tab active" onclick="switchPitching('recent',this)">直近スタッツ</button>
     </div>
-    <div id="pitching-table-section"></div>
+    <div id="pitching-table-section">
+    <div style="margin-bottom:8px">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--surface2)">選手名</th><th>投球回</th><th>被安打</th><th>奪三振</th><th>与四死球</th><th>失点</th><th>投球数</th><th>失点率</th><th>奪三振率</th><th>被安打率</th><th>与四死球率</th><th>K/BB</th><th>WHIP</th></tr></thead>
+        <tbody>
+          <tr style="background:rgba(79,142,247,0.08)">
+            <td class="td-left" style="position:sticky;left:0;z-index:1;background:rgba(25,28,45,0.98);color:var(--accent);font-weight:600">チーム計</td>
+            <td style="color:var(--accent);font-weight:600">19.01</td><td style="color:var(--accent);font-weight:600">34</td><td style="color:var(--accent);font-weight:600">33</td><td style="color:var(--accent);font-weight:600">28</td><td style="color:var(--accent);font-weight:600">56</td><td style="color:var(--accent);font-weight:600">489</td><td style="color:var(--accent);font-weight:600">11.785</td><td style="color:var(--accent);font-weight:600">6.945</td><td style="color:var(--accent);font-weight:600">7.155</td><td style="color:var(--accent);font-weight:600">5.893</td><td style="color:var(--accent);font-weight:600">1.179</td><td style="color:var(--accent);font-weight:600">3.262</td>
+          </tr>
+          <tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">今鶴 陸</td><td class="">0.67</td><td class="bad-top2">2</td><td class="">1</td><td class="bad-top1">1</td><td class="bad-top1">3</td><td class="bad-top1">18</td><td class="">17.910<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">5.970<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↑</span></td><td class="">11.940</td><td class="bad-top2">5.970</td><td class="">1.000</td><td class="">4.478<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">田中 斗岐</td><td class="top1">5.34</td><td class="">9</td><td class="top1">9</td><td class="">3</td><td class="">10</td><td class="">88</td><td class="bad-top2">7.495</td><td class="">6.745</td><td class="">6.745</td><td class="bad-top1">2.248</td><td class="top1">3.000</td><td class="bad-top1">2.248</td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">大田 結愛</td><td class="">1.67</td><td class="bad-top1">1</td><td class="top3">4</td><td class="">3</td><td class="bad-top2">3</td><td class="">44</td><td class="bad-top1">7.186<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="top2">9.581<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="bad-top1">2.395</td><td class="">7.186<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="top3">1.333</td><td class="bad-top2">2.395<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">木綿谷 昇汰</td><td class="">2.33</td><td class="">7</td><td class="">4</td><td class="">5</td><td class="">12</td><td class="">83</td><td class="">20.601<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">6.867<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">12.017</td><td class="">8.584<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">0.800</td><td class="">5.150<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">中野 樹</td><td class="">0.33</td><td class="bad-top3">2</td><td class="">1</td><td class="bad-top2">1</td><td class="bad-top3">3</td><td class="bad-top2">20</td><td class="">36.364<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="top1">12.121<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">24.242</td><td class="">12.121<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">1.000</td><td class="">9.091<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">今鶴 蒼大</td><td class="top2">2.67</td><td class="">4</td><td class="">2</td><td class="">4</td><td class="">6</td><td class="">66</td><td class="bad-top3">8.989<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="">2.996<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="bad-top3">5.993</td><td class="bad-top3">5.993<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="">0.500</td><td class="bad-top3">2.996<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">大田 笑愛</td><td class="">1.33</td><td class="">2</td><td class="">3</td><td class="bad-top3">2</td><td class="">4</td><td class="bad-top3">37</td><td class="">12.030</td><td class="top3">9.023</td><td class="">6.015</td><td class="">6.015</td><td class="top2">1.500</td><td class="">3.008</td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">岸根 汐音</td><td class="top3">2.67</td><td class="">3</td><td class="top2">5</td><td class="">5</td><td class="">9</td><td class="">70</td><td class="">13.483<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">7.491</td><td class="bad-top2">4.494</td><td class="">7.491<span style="font-size:11px;font-weight:700;color:var(--good);margin-left:3px">↓</span></td><td class="">1.000</td><td class="">2.996</td></tr><tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">豊田 晃紳</td><td class="">2.00</td><td class="">4</td><td class="">4</td><td class="">4</td><td class="">6</td><td class="">63</td><td class="">12.000<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="">8.000<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↓</span></td><td class="">8.000</td><td class="">8.000<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td><td class="">1.000</td><td class="">4.000<span style="font-size:11px;font-weight:700;color:var(--bad);margin-left:3px">↑</span></td></tr></tbody>
+      </table></div>
+    </div></div>
     <p style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)">※ <span style="color:var(--good);font-weight:700">↑</span>改善傾向 <span style="color:var(--bad);font-weight:700">↓</span>下落傾向（全体↔直近5試合 比較、3%以上の変化のみ表示）</p>
-    <div id="pitching-chart-section" style="margin-top:8px"></div>
+    <div id="pitching-chart-section" style="margin-top:8px"><div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;"><button class="active" style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">失点率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">奪三振率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">被安打率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">与四死球率</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">K/BB</button><button style="padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; cursor: pointer; transition: background 0.15s, color 0.15s;">WHIP</button></div><div class="chart-card"><h3 style="font-size: 13px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;"><span>失点率 推移</span><span class="badge bad" style="margin-left: 8px;">▼ 低いほど良い</span></h3><div class="team-pill"><span class="pill-line"></span>チーム全体（白太線）</div><div class="legend" style="margin-bottom: 8px;"><span class="leg"><span class="leg-sw" style="background:#4f8ef7"></span>中野 樹</span><span class="leg"><span class="leg-sw" style="background:#f76b6b"></span>今鶴 蒼大</span><span class="leg"><span class="leg-sw" style="background:#34d17a"></span>今鶴 陸</span><span class="leg"><span class="leg-sw" style="background:#f7c34f"></span>大田 笑愛</span><span class="leg"><span class="leg-sw" style="background:#b07ef7"></span>大田 結愛</span><span class="leg"><span class="leg-sw" style="background:#4fd1d9"></span>岸根 汐音</span><span class="leg"><span class="leg-sw" style="background:#f7944f"></span>木綿谷 昇汰</span><span class="leg"><span class="leg-sw" style="background:#a3e635"></span>森畑 葵斗</span><span class="leg"><span class="leg-sw" style="background:#f76be8"></span>森畑 遥斗</span><span class="leg"><span class="leg-sw" style="background:#7fb4f7"></span>田中 斗岐</span><span class="leg"><span class="leg-sw" style="background:#f76b9a"></span>豊田 晃紳</span></div><div style="position: relative; width: 100%; height: 260px;"><canvas id="cv_pitching-chart-section" width="886" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 886px;"></canvas></div><p style="font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--mono);">※ 各点はその日までの全試合累積値。凡例クリックで表示切替。</p></div></div>
   </div>
 
 
@@ -270,7 +514,87 @@ tr:hover td{background:rgba(255,255,255,.03)}
   <div class="page" id="page-players">
     <p class="page-title">選手一覧</p>
     <p class="page-sub">選手をタップで個人ページへ</p>
-    <div class="player-grid" id="player-grid"></div>
+    <div class="player-grid" id="player-grid"><div class="player-card" data-name="今鶴 陸" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">今鶴 陸</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">1.436</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="田中 斗岐" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">田中 斗岐</div>
+      <div class="pc-games">3試合</div>
+      <div class="pc-ops">0.762</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="森畑 遥斗" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">森畑 遥斗</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">1.074</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="大田 結愛" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">大田 結愛</div>
+      <div class="pc-games">26試合</div>
+      <div class="pc-ops">0.992</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="木綿谷 昇汰" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">木綿谷 昇汰</div>
+      <div class="pc-games">25試合</div>
+      <div class="pc-ops">0.527</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="井藤 大翔" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">井藤 大翔</div>
+      <div class="pc-games">25試合</div>
+      <div class="pc-ops">0.899</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="村上 涼真" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">村上 涼真</div>
+      <div class="pc-games">25試合</div>
+      <div class="pc-ops">0.583</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="林 颯心" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">林 颯心</div>
+      <div class="pc-games">19試合</div>
+      <div class="pc-ops">0.125</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="清水 佑一郎" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">清水 佑一郎</div>
+      <div class="pc-games">15試合</div>
+      <div class="pc-ops">0.286</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="中野 樹" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">中野 樹</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">0.660</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="森畑 葵斗" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">森畑 葵斗</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">1.347</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="今鶴 蒼大" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">今鶴 蒼大</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">1.165</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="大田 笑愛" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">大田 笑愛</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">0.564</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="岸根 汐音" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">岸根 汐音</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">0.869</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="豊田 晃紳" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">豊田 晃紳</div>
+      <div class="pc-games">27試合</div>
+      <div class="pc-ops">0.876</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div><div class="player-card" data-name="工藤 蓮大" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">工藤 蓮大</div>
+      <div class="pc-games">12試合</div>
+      <div class="pc-ops">0.400</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div></div>
   </div>
 
   <!-- 走塁タイム -->
@@ -280,41 +604,41 @@ tr:hover td{background:rgba(255,255,255,.03)}
       <span style="font-size:20px">🏃</span>
       <div>
         <div style="font-size:13px;font-weight:500">データ更新ボタンからベースランニングExcelをドロップ</div>
-        <div id="run-file-info" style="font-size:11px;color:var(--good);font-family:var(--mono);margin-top:2px;display:none"></div>
+        <div id="run-file-info" style="font-size: 11px; color: var(--good); font-family: var(--mono); margin-top: 2px; display: block;">読込済: 260719ﾍﾞｰｽﾗﾝﾆﾝｸﾞﾀｲﾑ管理表.xlsx | 2026/7/20 22:24:12</div>
       </div>
     </div>
     <div id="run-err" style="display:none;color:var(--bad);font-size:13px;margin-bottom:12px"></div>
-    <p id="run-empty" style="font-size:13px;color:var(--muted)">データ更新でExcelをドロップするとグラフが表示されます。</p>
-    <div id="run-charts" style="display:none">
-      <div class="chart-card" id="run-lap-card">
+    <p id="run-empty" style="font-size: 13px; color: var(--muted); display: none;">データ更新でExcelをドロップするとグラフが表示されます。</p>
+    <div id="run-charts" style="display: block;">
+      <div class="chart-card" id="run-lap-card" style="display: block;">
         <h3 style="margin-bottom:10px">ベースランニング一周 <span class="badge bad">▼ 低いほど速い</span></h3>
-        <div class="tbl-wrap" id="run-lap-table" style="margin-bottom:16px"></div>
+        <div class="tbl-wrap" id="run-lap-table" style="margin-bottom: 16px; display: block;"><table><thead><tr><th style="text-align:left;position:sticky;left:0;background:var(--surface2);z-index:1">選手</th><th>09/17</th><th>10/01</th><th>11/19</th><th>12/17</th><th>01/28</th><th>02/25</th><th>04/29</th><th>05/24</th><th>06/06</th><th>07/18</th><th style="color:var(--accent)">ベスト</th></tr></thead><tbody><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおい</td><td style="background:;color:;font-weight:400">20.54</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">20.97</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.46</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">23.74</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.18</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.84</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.68</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.46</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.77</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.75</td><td style="color:var(--accent);font-weight:700">17.75</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおと</td><td style="background:;color:;font-weight:400">20.12</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.05</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.62</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.83</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.25</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.84</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.79</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.46</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.92</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.45</td><td style="color:var(--accent);font-weight:700">17.79</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">いつき</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">19.06</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.59</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.47</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.56</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.55</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.80</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.24</td><td style="color:var(--muted)">—</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.60</td><td style="color:var(--accent);font-weight:700">17.55</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">えま</td><td style="background:;color:;font-weight:400">22.16</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.45</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.94</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.54</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">20.54</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.89</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">20.24</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 19.61</td><td style="color:var(--accent);font-weight:700">19.61</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">けいすけ</td><td style="background:;color:;font-weight:400">17.81</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 16.53</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">16.53</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">こうしん</td><td style="background:;color:;font-weight:400">18.17</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.32</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.47</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.82</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.84</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.07</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.19</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">16.83</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.69</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 16.62</td><td style="color:var(--accent);font-weight:700">16.62</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">しおん</td><td style="background:;color:;font-weight:400">19.76</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">22.34</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.53</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.74</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.84</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.04</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.45</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.55</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.77</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.78</td><td style="color:var(--accent);font-weight:700">17.78</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">しょうた</td><td style="background:;color:;font-weight:400">20.42</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.56</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.95</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.37</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.74</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.62</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.48</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.65</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.33</td><td style="color:var(--accent);font-weight:700">17.65</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">とき</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">17.73</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 16.80</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">16.96</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">16.80</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はると</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 16.91</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.10</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.62</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.03</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.78</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.79</td><td style="color:var(--muted)">—</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.58</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.74</td><td style="color:var(--accent);font-weight:700">16.91</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はるま</td><td style="background:;color:;font-weight:400">18.78</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.70</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.90</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.99</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.28</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">18.30</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.50</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.88</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.13</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">17.13</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">ゆういちろう</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 20.86</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">22.13</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.94</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">21.19</td><td style="color:var(--accent);font-weight:700">20.86</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">ゆま</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">19.82</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">21.09</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.61</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">20.10</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.88</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.13</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.16</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.84</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 18.77</td><td style="color:var(--accent);font-weight:700">18.77</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りく</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">19.71</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">18.86</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.98</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">17.80</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">17.97</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 17.57</td><td style="color:var(--accent);font-weight:700">17.57</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りくと</td><td style="background:;color:;font-weight:400">22.11</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.36</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">23.20</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.40</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">22.08</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.76</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 20.42</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">20.42</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りょうま</td><td style="background:;color:;font-weight:400">22.49</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.35</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">22.80</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.21</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.72</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">20.71</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.34</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">19.25</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 19.16</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">19.17</td><td style="color:var(--accent);font-weight:700">19.16</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">れんと</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">—</td><td style="background:;color:;font-weight:400">23.25</td><td style="background:rgba(52,209,122,0.12);color:var(--good);font-weight:400">21.90</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 20.42</td><td style="color:var(--accent);font-weight:700">20.42</td></tr><tr style="background:rgba(255,255,255,0.04);border-top:1px solid var(--border2)"><td class="td-left" style="position:sticky;left:0;background:rgba(30,33,50,0.95);z-index:1;color:var(--accent);font-weight:600;font-size:12px">チーム平均</td><td style="color:var(--accent);font-weight:600">20.24</td><td style="color:var(--accent);font-weight:600">19.57</td><td style="color:var(--accent);font-weight:600">19.94</td><td style="color:var(--accent);font-weight:600">19.28</td><td style="color:var(--accent);font-weight:600">18.87</td><td style="color:var(--accent);font-weight:600">18.87</td><td style="color:var(--accent);font-weight:600">18.78</td><td style="color:var(--accent);font-weight:600">19.52</td><td style="color:var(--accent);font-weight:600">18.90</td><td style="color:var(--accent);font-weight:600">18.62</td><td style="color:var(--accent);font-weight:700">18.62</td></tr></tbody></table></div>
         <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
-        <div class="legend" id="run-lap-legend"></div>
-        <div style="position:relative;width:100%;height:300px"><canvas id="runLapCanvas"></canvas></div>
+        <div class="legend" id="run-lap-legend"><span class="leg"><span class="leg-sw" style="background:#4f8ef7"></span>あおい</span><span class="leg"><span class="leg-sw" style="background:#f76b6b"></span>あおと</span><span class="leg"><span class="leg-sw" style="background:#34d17a"></span>いつき</span><span class="leg"><span class="leg-sw" style="background:#f7c34f"></span>えま</span><span class="leg"><span class="leg-sw" style="background:#b07ef7"></span>けいすけ</span><span class="leg"><span class="leg-sw" style="background:#4fd1d9"></span>こうしん</span><span class="leg"><span class="leg-sw" style="background:#f7944f"></span>しおん</span><span class="leg"><span class="leg-sw" style="background:#a3e635"></span>しょうた</span><span class="leg"><span class="leg-sw" style="background:#f76be8"></span>とき</span><span class="leg"><span class="leg-sw" style="background:#7fb4f7"></span>はると</span><span class="leg"><span class="leg-sw" style="background:#f76b9a"></span>はるま</span><span class="leg"><span class="leg-sw" style="background:#34d1b0"></span>ゆういちろう</span><span class="leg"><span class="leg-sw" style="background:#f7e34f"></span>ゆま</span><span class="leg"><span class="leg-sw" style="background:#c97ef7"></span>りく</span><span class="leg"><span class="leg-sw" style="background:#7af76b"></span>りくと</span><span class="leg"><span class="leg-sw" style="background:#f7a34f"></span>りょうま</span><span class="leg"><span class="leg-sw" style="background:#ff9999"></span>れんと</span></div>
+        <div style="position:relative;width:100%;height:300px"><canvas id="runLapCanvas" width="886" height="300" style="display: block; box-sizing: border-box; height: 300px; width: 886px;"></canvas></div>
         <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
       </div>
-      <div class="chart-card" id="run-first-card" style="display:none">
+      <div class="chart-card" id="run-first-card" style="display: block;">
         <h3 style="margin-bottom:10px">一塁駆け抜け <span class="badge bad">▼ 低いほど速い</span></h3>
-        <div class="tbl-wrap" id="run-first-table" style="margin-bottom:16px"></div>
+        <div class="tbl-wrap" id="run-first-table" style="margin-bottom: 16px; display: block;"><table><thead><tr><th style="text-align:left;position:sticky;left:0;background:var(--surface2);z-index:1">選手</th><th>01/28</th><th>06/03</th><th style="color:var(--accent)">ベスト</th></tr></thead><tbody><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおい</td><td style="background:;color:;font-weight:400">4.50</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.45</td><td style="color:var(--accent);font-weight:700">4.45</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおと</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.31</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">4.44</td><td style="color:var(--accent);font-weight:700">4.31</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">いつき</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.16</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">4.35</td><td style="color:var(--accent);font-weight:700">4.16</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">こうしん</td><td style="background:;color:;font-weight:400">4.20</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 3.96</td><td style="color:var(--accent);font-weight:700">3.96</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">しおん</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.48</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">4.52</td><td style="color:var(--accent);font-weight:700">4.48</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">しょうた</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.37</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">4.37</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">とき</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 3.81</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">3.81</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はると</td><td style="background:;color:;font-weight:400">4.28</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.06</td><td style="color:var(--accent);font-weight:700">4.06</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はるま</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.10</td><td style="background:rgba(247,107,107,0.10);color:var(--bad);font-weight:400">4.33</td><td style="color:var(--accent);font-weight:700">4.10</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">ゆういちろう</td><td style="color:var(--muted)">—</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 5.10</td><td style="color:var(--accent);font-weight:700">5.10</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">ゆま</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.66</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">4.66</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りく</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.19</td><td style="color:var(--muted)">—</td><td style="color:var(--accent);font-weight:700">4.19</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りょうま</td><td style="background:;color:;font-weight:400">4.65</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 4.43</td><td style="color:var(--accent);font-weight:700">4.43</td></tr><tr style="background:rgba(255,255,255,0.04);border-top:1px solid var(--border2)"><td class="td-left" style="position:sticky;left:0;background:rgba(30,33,50,0.95);z-index:1;color:var(--accent);font-weight:600;font-size:12px">チーム平均</td><td style="color:var(--accent);font-weight:600">4.31</td><td style="color:var(--accent);font-weight:600">4.40</td><td style="color:var(--accent);font-weight:700">4.31</td></tr></tbody></table></div>
         <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
-        <div class="legend" id="run-first-legend"></div>
-        <div style="position:relative;width:100%;height:260px"><canvas id="runFirstCanvas"></canvas></div>
+        <div class="legend" id="run-first-legend"><span class="leg"><span class="leg-sw" style="background:#4f8ef7"></span>あおい</span><span class="leg"><span class="leg-sw" style="background:#f76b6b"></span>あおと</span><span class="leg"><span class="leg-sw" style="background:#34d17a"></span>いつき</span><span class="leg"><span class="leg-sw" style="background:#f7c34f"></span>こうしん</span><span class="leg"><span class="leg-sw" style="background:#b07ef7"></span>しおん</span><span class="leg"><span class="leg-sw" style="background:#4fd1d9"></span>しょうた</span><span class="leg"><span class="leg-sw" style="background:#f7944f"></span>とき</span><span class="leg"><span class="leg-sw" style="background:#a3e635"></span>はると</span><span class="leg"><span class="leg-sw" style="background:#f76be8"></span>はるま</span><span class="leg"><span class="leg-sw" style="background:#7fb4f7"></span>ゆういちろう</span><span class="leg"><span class="leg-sw" style="background:#f76b9a"></span>ゆま</span><span class="leg"><span class="leg-sw" style="background:#34d1b0"></span>りく</span><span class="leg"><span class="leg-sw" style="background:#f7e34f"></span>りょうま</span></div>
+        <div style="position:relative;width:100%;height:260px"><canvas id="runFirstCanvas" width="886" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 886px;"></canvas></div>
         <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
       </div>
-      <div class="chart-card" id="run-second-card" style="display:none">
+      <div class="chart-card" id="run-second-card" style="display: block;">
         <h3 style="margin-bottom:10px">二塁まで <span class="badge bad">▼ 低いほど速い</span></h3>
-        <div class="tbl-wrap" id="run-second-table" style="margin-bottom:16px"></div>
+        <div class="tbl-wrap" id="run-second-table" style="margin-bottom: 16px; display: block;"><table><thead><tr><th style="text-align:left;position:sticky;left:0;background:var(--surface2);z-index:1">選手</th><th>06/03</th><th style="color:var(--accent)">ベスト</th></tr></thead><tbody><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおい</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 9.38</td><td style="color:var(--accent);font-weight:700">9.38</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">あおと</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 9.05</td><td style="color:var(--accent);font-weight:700">9.05</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">いつき</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 8.94</td><td style="color:var(--accent);font-weight:700">8.94</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">えま</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 10.41</td><td style="color:var(--accent);font-weight:700">10.41</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">こうしん</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 8.63</td><td style="color:var(--accent);font-weight:700">8.63</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">しおん</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 10.15</td><td style="color:var(--accent);font-weight:700">10.15</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はると</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 8.96</td><td style="color:var(--accent);font-weight:700">8.96</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">はるま</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 8.89</td><td style="color:var(--accent);font-weight:700">8.89</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">ゆういちろう</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 10.22</td><td style="color:var(--accent);font-weight:700">10.22</td></tr><tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">りょうま</td><td style="background:rgba(255,165,0,0.18);color:#ffa500;font-weight:700">🏅 10.72</td><td style="color:var(--accent);font-weight:700">10.72</td></tr><tr style="background:rgba(255,255,255,0.04);border-top:1px solid var(--border2)"><td class="td-left" style="position:sticky;left:0;background:rgba(30,33,50,0.95);z-index:1;color:var(--accent);font-weight:600;font-size:12px">チーム平均</td><td style="color:var(--accent);font-weight:600">9.54</td><td style="color:var(--accent);font-weight:700">9.54</td></tr></tbody></table></div>
         <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
-        <div class="legend" id="run-second-legend"></div>
-        <div style="position:relative;width:100%;height:260px"><canvas id="runSecondCanvas"></canvas></div>
+        <div class="legend" id="run-second-legend"><span class="leg"><span class="leg-sw" style="background:#4f8ef7"></span>あおい</span><span class="leg"><span class="leg-sw" style="background:#f76b6b"></span>あおと</span><span class="leg"><span class="leg-sw" style="background:#34d17a"></span>いつき</span><span class="leg"><span class="leg-sw" style="background:#f7c34f"></span>えま</span><span class="leg"><span class="leg-sw" style="background:#b07ef7"></span>こうしん</span><span class="leg"><span class="leg-sw" style="background:#4fd1d9"></span>しおん</span><span class="leg"><span class="leg-sw" style="background:#f7944f"></span>はると</span><span class="leg"><span class="leg-sw" style="background:#a3e635"></span>はるま</span><span class="leg"><span class="leg-sw" style="background:#f76be8"></span>ゆういちろう</span><span class="leg"><span class="leg-sw" style="background:#7fb4f7"></span>りょうま</span></div>
+        <div style="position:relative;width:100%;height:260px"><canvas id="runSecondCanvas" width="886" height="260" style="display: block; box-sizing: border-box; height: 260px; width: 886px;"></canvas></div>
         <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
       </div>
     </div>
   </div>
 
   <!-- AI分析 -->
-  <div class="page" id="page-ai">
+  <div class="page active" id="page-ai">
     <p class="page-title">🤖 AI分析</p>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button class="ai-tab-btn active" onclick="switchAiTab('comment')" id="aibtn-comment">📊 チーム分析</button>
@@ -323,19 +647,54 @@ tr:hover td{background:rgba(255,255,255,.03)}
     </div>
 
     <!-- チーム分析 -->
-    <div id="ai-tab-comment">
-      <div id="ai-comment-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    <div id="ai-tab-comment" style="display: block;">
+      <div id="ai-comment-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap">【チーム総評】
+シーズン成績は10勝16敗1分。7/20は2試合戦い、セントラル硝子杯の恩田戦は5-10で敗戦、続く神原・新川との練習試合は15-12で打ち勝ちました。この日だけでチーム打率.365(直近5試合)・盗塁69など、打撃と機動力のポテンシャルの高さを改めて示す内容でした。
+
+チーム全体では打率.347・OPS.982、27試合で盗塁254（1試合平均9.4個）という圧倒的な機動力が最大の武器であることに変わりありません。得点162に対し失点212と、まだ失点が得点を上回っていますが、これは投手陣の与四死球（142個、与四死球率8.193）が主な原因です。
+
+直近5試合はOPS1.122・三振率.156とシーズン通算(.269)から大きく改善しており、打線の状態は明確に上向いています。一方で投手面は失点率11.785・WHIP3.262とやや改善しつつも、7/20の恩田戦のように守り切れない試合がまだ目立ちます。
+
+打撃・走塁の強みを維持したまま、投手陣が四死球を減らして接戦をものにできれば、貯金を作れる位置まで来ています。</div>
     </div>
 
     <!-- 打順アドバイス -->
-    <div id="ai-tab-order" style="display:none">
-      <div id="ai-order-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    <div id="ai-tab-order" style="display: none;">
+      <div id="ai-order-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap">【打順アドバイス（案）】
+1番 今鶴 陸（打率.609 / OPS1.436 / 盗塁46）
+　出塁率.696とリーグ屈指の出塁力。7/20も含め安定してチャンスメイクできる不動のトップバッター。
+
+2番 森畑 葵斗（打率.491 / OPS1.347 / 本塁打3）
+　長打率.811とチーム随一のパワーヒッター。1番を確実に還しつつ、自らも長打を狙える。
+
+3番 今鶴 蒼大（打率.400 / OPS1.165 / 出塁率.605）
+　三振率.158と勝負強さがあり、盗塁21も含め中軸をつなぐ役割に最適。
+
+4番 森畑 遥斗（打率.395 / OPS1.074 / 本塁打2）
+　7/20を含め長打が増えており、勝負どころで一打が期待できる。
+
+5番 大田 結愛（打率.353 / OPS.992 / 盗塁24）
+　出塁率.551と高く、下位からの流れを切らさずに得点につなげられる。
+
+6番 豊田 晃紳（打率.320 / OPS.876 / 盗塁24）
+　出塁率.556と勝負強く、下位打線でも再度かき回せる。
+
+7番 岸根 汐音（出塁率.633 / 盗塁19）
+　打率は.235だが四死球での出塁力が高く、下位打線での出塁役に。
+
+8番 中野 樹（打率.195 / 盗塁19）
+9番 木綿谷 昇汰（打率.179 / 盗塁11）
+　下位も走れる選手を並べ、切れ目のない機動力ラインに。
+
+※あくまでスタッツから見た一案です。守備位置・実際の調子・対戦相手を踏まえて最終判断はコーチ陣でお願いします。</div>
     </div>
 
     <!-- 選手コメント -->
-    <div id="ai-tab-player" style="display:none">
-      <select id="ai-player-select" onchange="renderAiPlayerComment()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px"></select>
-      <div id="ai-player-comment-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    <div id="ai-tab-player" style="display: none;">
+      <select id="ai-player-select" onchange="renderAiPlayerComment()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px"><option value="今鶴 陸">今鶴 陸</option><option value="田中 斗岐">田中 斗岐</option><option value="森畑 遥斗">森畑 遥斗</option><option value="大田 結愛">大田 結愛</option><option value="木綿谷 昇汰">木綿谷 昇汰</option><option value="井藤 大翔">井藤 大翔</option><option value="村上 涼真">村上 涼真</option><option value="林 颯心">林 颯心</option><option value="清水 佑一郎">清水 佑一郎</option><option value="中野 樹">中野 樹</option><option value="森畑 葵斗">森畑 葵斗</option><option value="今鶴 蒼大">今鶴 蒼大</option><option value="大田 笑愛">大田 笑愛</option><option value="岸根 汐音">岸根 汐音</option><option value="豊田 晃紳">豊田 晃紳</option><option value="工藤 蓮大">工藤 蓮大</option></select>
+      <div id="ai-player-comment-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap">【現状】打率.235だが出塁率.633と高く、四死球13・盗塁19と機動力・選球眼で貢献。投手では3.67回で失点率11.989・WHIP2.997とチーム内でも安定した数字。
+【ストロング】長打はまだ少ないものの、四死球からの出塁とその後の盗塁でチャンスメイクできている。投手としてもK/BB1.167と与四死球より奪三振(7)が上回っており安定感がある。
+【課題】打率自体を上げられれば出塁率はさらに伸びる。三振率.367もやや高めなので、まずはコンタクトを増やしたい。</div>
     </div>
   </div>
 
@@ -1500,12 +1859,12 @@ function buildRunLineChart(key,canvasId,legendId,data){
 }
 </script>
 <div id="bottom-nav">
-  <div class="bn-item active" onclick="showPage('results')"><span class="bn-icon">🏆</span>試合</div>
+  <div class="bn-item" onclick="showPage('results')"><span class="bn-icon">🏆</span>試合</div>
   <div class="bn-item" onclick="showPage('batting')"><span class="bn-icon">⚾</span>打撃</div>
   <div class="bn-item" onclick="showPage('pitching')"><span class="bn-icon">⚾</span>投手</div>
   <div class="bn-item" onclick="showPage('players')"><span class="bn-icon">👤</span>選手</div>
   <div class="bn-item" onclick="showPage('running')"><span class="bn-icon">🏃</span>走塁</div>
-  <div class="bn-item" onclick="showPage('ai')"><span class="bn-icon">🤖</span>AI</div>
+  <div class="bn-item active" onclick="showPage('ai')"><span class="bn-icon">🤖</span>AI</div>
 </div>
-</body>
-</html>
+
+</body></html>
