@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>東岐波 C級 チームサイト</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf0;--muted:#7a7f99;--accent:#4f8ef7;
+  --good:#34d17a;--bad:#f76b6b;--draw:#f7c34f;
+  --mono:'DM Mono',monospace;--sans:'Noto Sans JP',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ===== パスワード画面 ===== */
+#pwScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:24px}
+#pwCard{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 32px;display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);}
+#pwScreen h1{font-size:22px;font-weight:700;text-align:center;margin:0;line-height:1.5}
+#pwScreen .pw-sub{font-size:13px;color:var(--muted);text-align:center;margin:0}
+.pw-box{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+#pwInput{background:var(--surface2);border:2px solid var(--border2);color:var(--text);padding:14px 16px;border-radius:12px;font-size:28px;font-family:var(--mono);width:100%;text-align:center;letter-spacing:10px;outline:none;min-height:56px;-webkit-tap-highlight-color:rgba(0,0,0,0);box-sizing:border-box;}
+#pwInput:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,0.2)}
+#pwLoginBtn{background:linear-gradient(135deg,#4f8ef7,#6c63ff);color:#fff;border:none;padding:0;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--sans);min-height:52px;width:100%;letter-spacing:1px;-webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation;box-shadow:0 4px 14px rgba(79,142,247,0.4);transition:opacity .15s;}
+#pwLoginBtn:active{opacity:.8;}
+#pwErr{color:var(--bad);font-size:13px;display:none;text-align:center;}
+
+/* ===== 更新画面 ===== */
+#updateScreen{position:fixed;inset:0;background:var(--bg);z-index:9998;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;padding:24px}
+#updateScreen h2{font-size:18px;font-weight:700}
+#updateScreen p{font-size:13px;color:var(--muted);text-align:center;line-height:1.8}
+.drop-area{border:1.5px dashed var(--border2);border-radius:12px;padding:32px 24px;text-align:center;cursor:pointer;position:relative;transition:border-color .2s,background .2s;min-width:280px}
+.drop-area.drag-over{border-color:var(--accent);background:rgba(79,142,247,.05)}
+.drop-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-area .di{font-size:32px;margin-bottom:8px;opacity:.5}
+.drop-area p{font-size:13px;color:var(--muted)}
+.drop-area strong{color:var(--text)}
+.close-update{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-family:var(--sans)}
+/* 新パスワード表示 */
+#newPwBox{display:none;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:24px;text-align:center;gap:12px;flex-direction:column}
+#newPwBox .pw-display{font-size:48px;font-family:var(--mono);font-weight:700;color:var(--accent);letter-spacing:10px}
+#newPwBox p{font-size:13px;color:var(--muted)}
+
+/* ===== メインレイアウト ===== */
+#app{display:none}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:0;overflow-x:auto}
+.nav-brand{font-size:14px;font-weight:700;padding:14px 16px 14px 0;white-space:nowrap;border-right:1px solid var(--border);margin-right:8px;flex-shrink:0}
+.nav-brand span{color:var(--accent)}
+.nav-item{padding:14px 12px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .15s;flex-shrink:0}
+.nav-item:hover{color:var(--text)}
+.nav-item.active{color:var(--text);border-bottom-color:var(--accent);font-weight:500}
+.nav-update{margin-left:auto;padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--sans);flex-shrink:0;transition:all .15s}
+.ai-tab-btn{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;font-family:var(--sans);transition:background .15s,color .15s}
+.ai-tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.nav-update:hover{color:var(--text);border-color:var(--accent)}
+
+/* ===== ページ共通 ===== */
+.page{display:none;padding:20px 16px 48px;max-width:960px;margin:0 auto}
+.page.active{display:block}
+.page-title{font-size:18px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--muted);margin-bottom:20px;font-family:var(--mono)}
+
+/* ===== サマリーカード ===== */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:20px}
+.s-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.s-label{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.s-val{font-size:22px;font-weight:700;font-family:var(--mono);margin-top:2px}
+
+/* ===== テーブル ===== */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);color:var(--muted);font-weight:500;padding:8px 10px;text-align:center;white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;text-align:center;border-top:1px solid var(--border);white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.03)}
+.td-left{text-align:left}
+.win{color:var(--good);font-weight:700}
+.loss{color:var(--bad);font-weight:700}
+.draw{color:var(--draw);font-weight:700}
+.top1{background:rgba(255,165,0,.15);color:#ffa500;font-weight:700}
+.top2{background:rgba(192,192,192,.15);color:#c0c0c0;font-weight:700}
+.top3{background:rgba(205,127,50,.15);color:#cd7f32;font-weight:700}
+.bad-top1{background:rgba(79,142,247,.15);color:#4f8ef7;font-weight:700}
+.bad-top2{background:rgba(79,142,247,.12);color:#7fb4f7;font-weight:700}
+.bad-top3{background:rgba(79,142,247,.09);color:#aecef7;font-weight:700}
+
+/* ===== タブ ===== */
+.tab-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
+.tab{padding:6px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:12px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+.tab.active{background:var(--surface2);color:var(--text);border-color:var(--accent);font-weight:500}
+
+/* ===== グラフカード ===== */
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.chart-card h3{font-size:14px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-family:var(--mono);font-weight:500}
+.badge.good{background:rgba(52,209,122,.15);color:var(--good)}
+.badge.bad{background:rgba(247,107,107,.15);color:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:4px;border:1px solid transparent;user-select:none;transition:all .12s}
+.leg:hover{border-color:var(--border2);color:var(--text)}
+.leg.off{opacity:.28}
+.leg-sw{width:18px;height:3px;border-radius:2px;flex-shrink:0}
+
+/* ===== 選手一覧 ===== */
+.player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.player-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;text-align:center}
+.player-card:hover{border-color:var(--accent);background:var(--surface2)}
+.player-card .pc-name{font-size:14px;font-weight:500;margin-bottom:4px}
+.player-card .pc-games{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.player-card .pc-ops{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--accent);margin-top:4px}
+
+/* ===== 選手個人ページ ===== */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:16px;padding:6px 12px;border:1px solid var(--border2);border-radius:6px;transition:all .15s}
+.ai-tab-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;cursor:pointer;font-weight:500;transition:all .15s}
+.ai-tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.back-btn:hover{color:var(--text);border-color:var(--accent)}
+.player-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.player-avatar{width:56px;height:56px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.player-name{font-size:22px;font-weight:700}
+.player-games{font-size:12px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.stat-badge-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.stat-badge{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;min-width:80px}
+.stat-badge .sb-label{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.stat-badge .sb-val{font-size:18px;font-weight:700;font-family:var(--mono);margin-top:2px}
+
+/* ===== グラフ凡例チームライン ===== */
+.team-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text);padding:2px 8px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04);margin-bottom:10px}
+.pill-line{width:20px;height:3px;border-radius:2px;background:#fff;flex-shrink:0}
+
+/* ===== ボトムナビ（スマホ） ===== */
+@media(max-width:640px){
+  nav .nav-item, nav .nav-brand{ display:none }
+  /* スマホではデータ更新ボタンも非表示 */
+  nav .nav-update{ display:none }
+  #bottom-nav{ display:flex }
+  #app{ padding-bottom:64px }
+}
+#bottom-nav{
+  display:none; position:fixed; bottom:0; left:0; right:0;
+  background:var(--surface); border-top:1px solid var(--border);
+  z-index:100; padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.bn-item{
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  padding:8px 4px; cursor:pointer; color:var(--muted); font-size:10px; gap:3px;
+  border-top:2px solid transparent; transition:color .15s;
+}
+.bn-item.active{ color:var(--accent); border-top-color:var(--accent); }
+.bn-icon{ font-size:18px; line-height:1; }
+
+/* スマホ対応 */
+@media(max-width:480px){
+  .page{padding:12px 10px 40px}
+  .player-grid{grid-template-columns:repeat(2,1fr)}
+  .summary-grid{grid-template-columns:repeat(2,1fr)}
+  th,td{padding:5px 7px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== パスワード画面 ========== -->
+<div id="pwScreen">
+  <div id="pwCard">
+    <h1>🔒 東岐波 C級<br>チームサイト</h1>
+    <p class="pw-sub" id="pwSub">4桁のパスワードを入力</p>
+    <div class="pw-box">
+      <input id="pwInput" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="· · · ·" autocomplete="off" onkeyup="if(event.keyCode===13)checkPw()">
+      <button id="pwLoginBtn" type="button" onclick="checkPw()">ログイン</button>
+    </div>
+    <p id="pwErr" style="display:none">❌ パスワードが違います</p>
+    <p id="pwForgot" style="font-size:11px;color:var(--muted);margin-top:16px;cursor:pointer;text-decoration:underline" onclick="enterAdminMode()">パスワードを忘れた場合はこちら</p>
+  </div>
+</div>
+
+<!-- ========== 更新画面 ========== -->
+<div id="updateScreen">
+  <h2>📂 データ更新</h2>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:580px">
+    <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px">
+      <p style="font-size:11px;color:var(--muted);font-family:var(--mono);text-align:center">📊 成績まとめ（この画面で即反映）</p>
+      <div class="drop-area" id="dropArea" style="padding:24px 16px">
+        <input type="file" accept=".xlsx,.xls" id="xlsxInput">
+        <div class="di" style="font-size:28px">📊</div>
+        <p><strong>成績まとめExcel</strong></p>
+        <p style="font-size:11px;margin-top:4px;font-family:var(--mono)">クリックまたはドロップ</p>
+      </div>
+      <p id="stats-update-info" style="font-size:11px;color:var(--good);text-align:center;display:none"></p>
+    </div>
+    <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px">
+      <p style="font-size:11px;color:var(--muted);font-family:var(--mono);text-align:center">🏃 走塁タイム（即時反映）</p>
+      <div class="drop-area" id="runDropArea2" style="padding:24px 16px">
+        <input type="file" accept=".xlsx,.xls" id="runXlsxInput2">
+        <div class="di" style="font-size:28px">🏃</div>
+        <p><strong>ベースランニングExcel</strong></p>
+        <p style="font-size:11px;margin-top:4px;font-family:var(--mono)">クリックまたはドロップ</p>
+      </div>
+      <p id="run-update-info" style="font-size:11px;color:var(--good);text-align:center;display:none"></p>
+    </div>
+  </div>
+  <button class="close-update" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="exportHtml()">⬇ このHTMLを出力</button>
+  <div style="max-width:580px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--muted);line-height:1.8;text-align:left">
+    <strong style="color:var(--text)">💡 AI分析（チーム総評・打順アドバイス・選手コメント）が必要なとき</strong><br>
+    ① 成績まとめExcelをドロップしてスタッツを最新化 → ② 上の「HTMLを出力」でファイルをダウンロード → ③ そのExcelとHTMLの両方をClaude(claude.ai)に送り「AI分析を追加してください」と伝える → ④ AI分析ページ付きの完成版HTMLが返ってきます。
+  </div>
+  <div id="newPwBox">
+    <p id="newPwMsg1" style="font-size:13px;color:var(--muted)">新しいパスワード（LINEで共有してください）</p>
+    <div class="pw-display" id="newPwDisplay"></div>
+    <p id="newPwMsg2">画面はこのまま更新済みです。忘れずに「HTMLを出力」して保存してください</p>
+    <p id="newPwMsg3" style="display:none;font-size:12px;color:var(--bad)">⚠️ このパスワードは一時的なものです。成績まとめExcelをドロップして更新してください</p>
+  </div>
+  <button class="close-update" onclick="closeUpdate()">← 戻る</button>
+</div>
+
+<!-- ========== メインアプリ ========== -->
+<div id="app">
+  <nav>
+    <div class="nav-brand">東岐波<span>C級</span></div>
+    <div class="nav-item active" onclick="showPage('results')">試合結果</div>
+    <div class="nav-item" onclick="showPage('batting')">打撃スタッツ</div>
+    <div class="nav-item" onclick="showPage('pitching')">投手スタッツ</div>
+    <div class="nav-item" onclick="showPage('players')">選手一覧</div>
+    <div class="nav-item" onclick="showPage('running')">走塁タイム</div>
+    <div class="nav-item" onclick="showPage('ai')">🤖 AI分析</div>
+    <button class="nav-update" onclick="openUpdate()">データ更新</button>
+  </nav>
+
+  <!-- 試合結果 -->
+  <div class="page active" id="page-results">
+    <p class="page-title">2026年 試合結果</p>
+    <p class="page-sub" id="results-sub"></p>
+    <div class="summary-grid" id="results-summary"></div>
+    <div class="tbl-wrap"><table id="results-table">
+      <thead><tr><th>No</th><th>日付</th><th>大会/試合</th><th>場所</th><th>対戦相手</th><th>勝敗</th><th>得点</th><th>失点</th><th>備考</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <!-- チームスタッツ -->
+  <div class="page" id="page-batting">
+    <p class="page-title">打撃スタッツ</p>
+    <p class="page-sub" id="batting-sub"></p>
+    <div class="tab-row">
+      <button class="tab active" onclick="switchBatting('all',this)">シーズン全体</button>
+      <button class="tab" onclick="switchBatting('recent',this)">直近スタッツ</button>
+    </div>
+    <div id="batting-table-section"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)">※ <span style="color:var(--good);font-weight:700">↑</span>改善傾向 <span style="color:var(--bad);font-weight:700">↓</span>下落傾向（全体↔直近5試合 比較、3%以上の変化のみ表示）</p>
+    <div id="batting-chart-section" style="margin-top:8px"></div>
+  </div>
+
+  <div class="page" id="page-pitching">
+    <p class="page-title">投手スタッツ</p>
+    <p class="page-sub" id="pitching-sub"></p>
+    <div class="tab-row">
+      <button class="tab active" onclick="switchPitching('all',this)">シーズン全体</button>
+      <button class="tab" onclick="switchPitching('recent',this)">直近スタッツ</button>
+    </div>
+    <div id="pitching-table-section"></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono)">※ <span style="color:var(--good);font-weight:700">↑</span>改善傾向 <span style="color:var(--bad);font-weight:700">↓</span>下落傾向（全体↔直近5試合 比較、3%以上の変化のみ表示）</p>
+    <div id="pitching-chart-section" style="margin-top:8px"></div>
+  </div>
+
+
+  <!-- 選手一覧 -->
+  <div class="page" id="page-players">
+    <p class="page-title">選手一覧</p>
+    <p class="page-sub">選手をタップで個人ページへ</p>
+    <div class="player-grid" id="player-grid"></div>
+  </div>
+
+  <!-- 走塁タイム -->
+  <div class="page" id="page-running">
+    <p class="page-title">走塁タイム</p>
+    <div id="run-info-bar" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">🏃</span>
+      <div>
+        <div style="font-size:13px;font-weight:500">データ更新ボタンからベースランニングExcelをドロップ</div>
+        <div id="run-file-info" style="font-size:11px;color:var(--good);font-family:var(--mono);margin-top:2px;display:none"></div>
+      </div>
+    </div>
+    <div id="run-err" style="display:none;color:var(--bad);font-size:13px;margin-bottom:12px"></div>
+    <p id="run-empty" style="font-size:13px;color:var(--muted)">データ更新でExcelをドロップするとグラフが表示されます。</p>
+    <div id="run-charts" style="display:none">
+      <div class="chart-card" id="run-lap-card">
+        <h3 style="margin-bottom:10px">ベースランニング一周 <span class="badge bad">▼ 低いほど速い</span></h3>
+        <div class="tbl-wrap" id="run-lap-table" style="margin-bottom:16px"></div>
+        <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
+        <div class="legend" id="run-lap-legend"></div>
+        <div style="position:relative;width:100%;height:300px"><canvas id="runLapCanvas"></canvas></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
+      </div>
+      <div class="chart-card" id="run-first-card" style="display:none">
+        <h3 style="margin-bottom:10px">一塁駆け抜け <span class="badge bad">▼ 低いほど速い</span></h3>
+        <div class="tbl-wrap" id="run-first-table" style="margin-bottom:16px"></div>
+        <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
+        <div class="legend" id="run-first-legend"></div>
+        <div style="position:relative;width:100%;height:260px"><canvas id="runFirstCanvas"></canvas></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
+      </div>
+      <div class="chart-card" id="run-second-card" style="display:none">
+        <h3 style="margin-bottom:10px">二塁まで <span class="badge bad">▼ 低いほど速い</span></h3>
+        <div class="tbl-wrap" id="run-second-table" style="margin-bottom:16px"></div>
+        <div class="team-pill"><span class="pill-line"></span>チーム平均（白太線）</div>
+        <div class="legend" id="run-second-legend"></div>
+        <div style="position:relative;width:100%;height:260px"><canvas id="runSecondCanvas"></canvas></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--mono)">※ 各点はその日の計測値。白太線＝参加者平均。凡例クリックで表示切替。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI分析 -->
+  <div class="page" id="page-ai">
+    <p class="page-title">🤖 AI分析</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="ai-tab-btn active" onclick="switchAiTab('comment')" id="aibtn-comment">📊 チーム分析</button>
+      <button class="ai-tab-btn" onclick="switchAiTab('order')" id="aibtn-order">📋 打順アドバイス</button>
+      <button class="ai-tab-btn" onclick="switchAiTab('player')" id="aibtn-player">👤 選手コメント</button>
+    </div>
+
+    <!-- チーム分析 -->
+    <div id="ai-tab-comment">
+      <div id="ai-comment-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    </div>
+
+    <!-- 打順アドバイス -->
+    <div id="ai-tab-order" style="display:none">
+      <div id="ai-order-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    </div>
+
+    <!-- 選手コメント -->
+    <div id="ai-tab-player" style="display:none">
+      <select id="ai-player-select" onchange="renderAiPlayerComment()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;margin-bottom:12px"></select>
+      <div id="ai-player-box" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+    </div>
+  </div>
+
+  <!-- 選手個人 -->
+  <div class="page" id="page-player-detail">
+    <div class="back-btn" onclick="showPage('players')">← 選手一覧に戻る</div>
+
+    <div id="player-detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// データ
+// ============================================================
+// AI分析ルール: 投球回(投球回>0)がある選手には、打撃分析に加えて必ず投手成績(WHIP・失点率・K/BB等)の分析を【現状】【ストロング】【課題】の各項目に含めること
+const AI_RESULTS = {"comment": "【東岐波クラブ C級 2026シーズン総評（30試合終了時点）】\n\n戦績は10勝19敗1分。チーム打率.333・出塁率.511・OPS.965と、打撃面は前回時点からほぼ横ばいの高水準を維持しています。四死球127個・盗塁281個という数字が示す通り、「選んで、走る」機動力野球がチームの持ち味であり、出塁後の攻撃力の高さが得点174という数字に表れています。\n\n一方で投手陣は失点率12.358・与四死球率8.069・WHIP3.958と、四死球から失点につながるケースが依然として多く、勝敗を分ける最大の要因になっています。奪三振率6.128に対し与四死球率8.069とK/BBは0.759にとどまっており、まずは制球を整えて簡単な四死球を減らすことが、接戦をものにするための最優先課題です。\n\n打撃面では今鶴陸（打率.609・出塁率.696・盗塁46）、森畑葵斗（打率.492・OPS1.400、本塁打4）、今鶴蒼大（出塁率.600・盗塁27）が高い出塁力と機動力・長打力でチームを牽引。特に森畑葵斗は前回時点から本塁打を1本積み増し、OPSがさらに向上しています。一方で下位打線の打率が伸び悩んでおり、つながりを生む打席でのアプローチ（バットに当てる意識、四死球からの出塁）を意識できると、さらに得点力が上がります。\n\n投手陣は木綿谷昇汰が23.67回を投げてチーム最多のイニングを消化し、失点率9.125・K/BB0.756と安定した投球回数を重ねています。今鶴陸も失点率10.734・与四死球率5.998と与四死球の少なさが光ります。一方で登板イニングの浅い投手ほど四死球率が上がる傾向があり、複数投手でイニングを分け合いながら制球練習を積むことが今後のチーム力アップにつながりそうです。", "order": "【打順アドバイス（30試合終了時点のデータより）】\n\n1番　今鶴 陸（出塁率.696／盗塁46）\n　チーム随一の出塁率と圧倒的な盗塁数。とにかく塁に出て試合を動かす役割にうってつけ。\n\n2番　今鶴 蒼大（出塁率.600／盗塁27）\n　打率.400と高いコンタクト力を持ちながら四死球15も選べる、1番を確実に還す・進める適性の高さが光る。\n\n3番　森畑 葵斗（打率.492／OPS1.400）\n　チーム最高打率＆長打率.869。本塁打4・二塁打5・三塁打3と長打力が際立ち、確実にランナーを還せる3番の適性が高い。\n\n4番　森畑 遥斗（OPS1.074／本塁打2）\n　本塁打2本を含む長打力があり、長打率.605で中軸を打てる。\n\n5番　大田 結愛（出塁率.538／盗塁25）\n　四死球15と出塁率の高さに加え盗塁25。中軸から下位につながりを作る打順に最適。\n\n6番　豊田 晃紳（出塁率.591／盗塁32）\n　出塁率.591とチーム屈指の高さ、さらに盗塁32はチームトップ。下位から再びかき回せる存在。\n\n7番　岸根 汐音（出塁率.605／盗塁24）\n　打率は控えめだが出塁率.605はチームトップ級。四死球からの出塁とその後の盗塁でチャンスメイクできる。\n\n8番　井藤 大翔（OPS.817）\n　四死球7・盗塁19と一定の出塁力を持ち、下位打線でも粘れるタイプ。\n\n9番　中野 樹 or 田中 斗岐\n　中野は投手としても長いイニングを投げられる貴重な存在。打席では無理をさせず、田中と併用しながら1番につなげる意識で。\n\n【控え】村上涼真・木綿谷昇汰・大田笑愛・清水佑一郎・林颯心・工藤蓮大\n　それぞれ出場機会を見ながら、四死球を選べる村上・工藤や、投手として実績のある木綿谷・大田笑愛は接戦の代打・継投面でも起用の幅がある。", "players": {"今鶴 陸": "【現状】打率.609・出塁率.696・OPS1.436、盗塁46はチーム断トツの数字。投手としても12.67回を投げ、失点率10.734・与四死球率5.998・K/BB1.053と安定した内容。\n【ストロング】三振率.107と非常にコンタクト力が高く、出塁したらほぼ盗塁するアグレッシブな走塁でチームの得点源になっている。投手としても与四死球の少なさが際立つ。\n【課題】打撃・走塁・投手すべてで負担が大きいポジションのため、球数や試合数のコントロールをしながらコンディションを維持したい。", "田中 斗岐": "【現状】出場3試合で打率.333・出塁率.429。投手では5.34回を投げ、失点率7.495・与四死球率2.248・K/BB3.0とチーム内でも際立って安定した数字を残している。\n【ストロング】与四死球率2.248と制球力が高く、少ない登板の中で試合をしっかり作れている。\n【課題】出場機会自体が少ないため、まずは試合経験を積んで安定感を継続できるか見極めたい。", "森畑 遥斗": "【現状】打率.395・OPS1.074、本塁打2本を含む長打力が魅力。投手では4.99回で失点率16.032・与四死球率14.429・WHIP6.413とやや制球に苦しんでいる。\n【ストロング】長打率.605と勝負強い打撃が持ち味で、チームの中軸を担える打力がある。\n【課題】投手としては与四死球率14.429と四死球が多く、失点につながっている。打撃の負担を考えても、まずは短いイニングでの制球固めから取り組みたい。", "大田 結愛": "【現状】打率.351・出塁率.538、四死球15と盗塁25で機動力も発揮。投手では4.67回で失点率16.274・奪三振率8.565・K/BB0.833。\n【ストロング】選球眼が良く出塁率.538と高水準。投手としても奪三振率8.565と三振を奪う力がある。\n【課題】投手としては与四死球率10.278がやや高め。奪三振は取れているだけに、四死球を減らせれば失点率は大きく改善しそう。", "木綿谷 昇汰": "【現状】打率.167とヒットは少ないが、投手ではチーム最多の23.67回を投げ、失点率9.125・K/BB0.756と安定してイニングを消化できている。\n【ストロング】長いイニングを安定して投げ切れる体力と精神力があり、チームの投手陣を支える存在。奪三振率5.239も一定水準。\n【課題】打撃面では三振率.382とやや高め。投手としての負担が大きい分、打席では無理に強振せずコンタクト重視でつなぐ形が合いそう。", "井藤 大翔": "【現状】打率.292・出塁率.484、盗塁19と一定の機動力あり。投球回0で今シーズンは打撃・走塁が中心。\n【ストロング】四死球7を選べる選球眼と、出塁後の盗塁19で得点に絡む力がある。\n【課題】三振率.387がやや高め。ボールをしっかり見極めてコンタクト率を上げられると、出塁率だけでなく打率も伸びそう。", "村上 涼真": "【現状】打率.111と苦しいが、四死球10で出塁率.464を記録。投球回0。\n【ストロング】四死球を選ぶ意識が高く、打率が低くても出塁率を大きく上げられている。\n【課題】打数に対して安打が少なく三振率.321もやや高い。バットに当てる確率を上げられれば出塁率はさらに伸びる。", "林 颯心": "【現状】打率.000、四死球2で出塁率.200。投球回0。\n【ストロング】少ない打席の中でも四死球を選ぶ場面があり、選球眼の芽は見える。\n【課題】三振率.800と非常に高く、まずはバットに当てる練習からコンタクト力を積み上げていきたい。", "清水 佑一郎": "【現状】打率.000だが四死球2で出塁率.375。投球回0。\n【ストロング】限られた打席数の中でも四死球で出塁できる場面があった。\n【課題】三振率.625とまだ高め。出場機会を増やしながら、まずはボールを捉える経験を積みたい。", "中野 樹": "【現状】打率.174・出塁率.345。投手では10.99回を投げ、失点率16.742・与四死球率9.099・WHIP5.187とチーム内でも制球に苦しんでいる。\n【ストロング】本塁打1本を含む長打力があり、盗塁20と機動力も併せ持つ。\n【課題】投手としては被安打率11.647・与四死球率9.099とやや打たれやすく四死球も多い。打撃でも三振率.309をもう少し抑えられると出塁率が安定する。", "森畑 葵斗": "【現状】打率.492・OPS1.400はチームトップクラス。投手では2.67回で失点率20.974・与四死球率17.978とやや制球に苦しんでいる。\n【ストロング】長打率.869、本塁打4本・二塁打5本・三塁打3本と長打力が際立ち、三振率.203とコンタクト力も両立している。\n【課題】投手としてはまだ登板イニングが短く、与四死球率17.978が高め。打撃の高い能力を考えると、投手としては短く要所を締める起用が合いそう。", "今鶴 蒼大": "【現状】打率.400・出塁率.600と高い出塁能力。投手では4.0回で失点率14.0・与四死球率9.0・WHIP4.75。\n【ストロング】三振率.200とコンタクト力が高く、盗塁27も含め出塁後の走塁力も高い。\n【課題】投手としては与四死球がやや多く、K/BB.444と奪三振も少なめ。打撃の高い能力を考えると、投手としては制球重視の起用が合いそう。", "大田 笑愛": "【現状】打率.125とヒットは少ないが、投手では1.33回で失点率12.03・被安打率6.015・与四死球率6.015・K/BB1.5と安定した数字を残している。\n【ストロング】短い登板ながら投手として四死球を出さず簡単に打たせない投球ができている。奪三振率9.023も高水準。\n【課題】打撃面では三振率.333とやや高め。投手として結果を残せているだけに、登板機会を増やしてもよさそうな内容。", "岸根 汐音": "【現状】打率.217だが出塁率.605と高く、四死球15・盗塁24と機動力・選球眼で貢献。投手では3.67回で失点率15.259・WHIP4.087。\n【ストロング】長打はまだ少ないものの、四死球からの出塁とその後の盗塁でチャンスメイクできている。投手としてもK/BB.875と与四死球より奪三振(7)が上回っており安定感がある。\n【課題】打率自体を上げられれば出塁率はさらに伸びる。三振率.368もやや高めなので、まずはコンタクトを増やしたい。", "豊田 晃紳": "【現状】打率.296・OPS.887、出塁率.591と高水準。投手では4.33回で失点率12.009・被安打率6.467・与四死球率8.314だが、K/BB.889と奪三振も一定数取れている。\n【ストロング】盗塁32はチームトップ、打撃・走塁ともに中軸級の働き。\n【課題】投手としては与四死球率8.314がやや高め。四死球をもう少し減らせれば失点率は改善しそう。", "工藤 蓮大": "【現状】打率.000だが四死球2・盗塁2で出塁率.429を記録。投球回0。\n【ストロング】少ない打席数の中でも四死球を選べており、粘り強さがある。\n【課題】出場・打席数がまだ少ないため、まずは実戦機会を増やしながら経験を積みたい。"}}; // AI結果埋め込み
+let SITEDATA = {"games": [{"no": 1, "date": "01/31", "type": "練習試合", "place": "岐波G", "opponent": "藤山", "result": "●", "score": 3, "lost": 5, "note": ""}, {"no": 2, "date": "01/31", "type": "練習試合", "place": "岐波G", "opponent": "藤山", "result": "●", "score": 2, "lost": 8, "note": ""}, {"no": 3, "date": "02/23", "type": "練習試合", "place": "岐波G", "opponent": "常盤・琴芝", "result": "●", "score": 8, "lost": 9, "note": ""}, {"no": 4, "date": "02/23", "type": "練習試合", "place": "岐波G", "opponent": "常盤・琴芝", "result": "●", "score": 8, "lost": 11, "note": ""}, {"no": 5, "date": "03/08", "type": "太陽家具杯", "place": "東部G", "opponent": "恩田", "result": "●", "score": 5, "lost": 6, "note": ""}, {"no": 6, "date": "03/21", "type": "幸太郎杯", "place": "東部G", "opponent": "常盤・琴芝", "result": "●", "score": 2, "lost": 3, "note": ""}, {"no": 7, "date": "03/21", "type": "幸太郎杯", "place": "東部G", "opponent": "藤山", "result": "●", "score": 4, "lost": 9, "note": ""}, {"no": 8, "date": "03/28", "type": "幸太郎杯", "place": "東部G", "opponent": "恩田", "result": "●", "score": 4, "lost": 10, "note": ""}, {"no": 9, "date": "03/29", "type": "幸太郎杯", "place": "東部G", "opponent": "厚東・西宇部・原", "result": "○", "score": 9, "lost": 0, "note": ""}, {"no": 10, "date": "03/29", "type": "練習試合", "place": "東部G", "opponent": "恩田", "result": "○", "score": 6, "lost": 5, "note": ""}, {"no": 11, "date": "04/11", "type": "毎日新聞杯", "place": "東部G", "opponent": "厚東・西宇部・原", "result": "○", "score": 12, "lost": 1, "note": ""}, {"no": 12, "date": "04/12", "type": "毎日新聞杯", "place": "東部G", "opponent": "藤山", "result": "●", "score": 6, "lost": 15, "note": "準優勝"}, {"no": 13, "date": "04/26", "type": "練習試合", "place": "岐波G", "opponent": "華城", "result": "○", "score": 3, "lost": 2, "note": "雨天コールド"}, {"no": 14, "date": "05/02", "type": "協議会杯", "place": "東部G", "opponent": "常盤・琴芝", "result": "●", "score": 6, "lost": 10, "note": ""}, {"no": 15, "date": "05/02", "type": "練習試合", "place": "亀浦G", "opponent": "常盤・琴芝", "result": "●", "score": 5, "lost": 11, "note": ""}, {"no": 16, "date": "05/16", "type": "練習試合", "place": "岐波G", "opponent": "高千帆", "result": "○", "score": 8, "lost": 6, "note": ""}, {"no": 17, "date": "05/16", "type": "練習試合", "place": "岐波G", "opponent": "高千帆", "result": "●", "score": 3, "lost": 11, "note": ""}, {"no": 18, "date": "05/31", "type": "練習試合", "place": "岐波G", "opponent": "川中西", "result": "○", "score": 12, "lost": 7, "note": ""}, {"no": 19, "date": "05/31", "type": "練習試合", "place": "岐波G", "opponent": "川中西", "result": "＝", "score": 7, "lost": 7, "note": ""}, {"no": 20, "date": "06/27", "type": "練習試合", "place": "東部G", "opponent": "恩田", "result": "●", "score": 0, "lost": 10, "note": ""}, {"no": 21, "date": "06/27", "type": "練習試合", "place": "東部G", "opponent": "恩田", "result": "●", "score": 2, "lost": 12, "note": ""}, {"no": 22, "date": "07/11", "type": "練習試合", "place": "東部G", "opponent": "原タイガース", "result": "○", "score": 9, "lost": 8, "note": ""}, {"no": 23, "date": "07/11", "type": "練習試合", "place": "東部G", "opponent": "岬", "result": "○", "score": 9, "lost": 6, "note": ""}, {"no": 24, "date": "07/12", "type": "練習試合", "place": "岐波G", "opponent": "高千帆", "result": "●", "score": 0, "lost": 11, "note": ""}, {"no": 25, "date": "07/12", "type": "練習試合", "place": "岐波G", "opponent": "高千帆", "result": "○", "score": 10, "lost": 10, "note": "タイブレーク後\nじゃんけん勝ち"}, {"no": 26, "date": "07/20", "type": "セントラル硝子杯", "place": "東部G", "opponent": "恩田", "result": "●", "score": 5, "lost": 10, "note": ""}, {"no": 27, "date": "07/20", "type": "練習試合", "place": "東部G", "opponent": "神原・新川", "result": "○", "score": 15, "lost": 12, "note": ""}, {"no": 28, "date": "08/08", "type": "練習試合", "place": "岐波G", "opponent": "常盤・琴芝", "result": "●", "score": 1, "lost": 12, "note": ""}, {"no": 29, "date": "08/08", "type": "練習試合", "place": "岐波G", "opponent": "常盤・琴芝", "result": "●", "score": 5, "lost": 9, "note": ""}, {"no": 30, "date": "08/11", "type": "練習試合", "place": "乃木浜G", "opponent": "下関ドリームス", "result": "●", "score": 6, "lost": 9, "note": ""}], "stats_all": {"team": {"試合数": 30, "打席数": 561, "打数": 421, "安打": 140, "打率": 0.333, "単打": 110, "二塁打": 17, "三塁打": 5, "本塁打": 8, "打点": 51, "得点": 174, "四死球": 127, "三振": 160, "犠打": 0, "犠飛": 0, "盗塁": 281, "その他出塁": 13, "出塁率": 0.511, "長打率": 0.454, "OPS": 0.965, "三振率": 0.285, "投球回": 78.327, "被安打": 152, "奪三振": 120, "与四死球": 158, "失点": 242, "投球数": 2467, "失点率": 12.358, "奪三振率": 6.128, "被安打率": 7.762, "与四死球率": 8.069, "K/BB": 0.759, "WHIP": 3.958}, "players": [{"name": "今鶴 陸", "試合数": 27, "打席数": 56, "打数": 46, "安打": 28, "打率": 0.609, "単打": 24, "二塁打": 3, "三塁打": 0, "本塁打": 1, "打点": 9, "得点": 31, "四死球": 10, "三振": 6, "犠打": 0, "犠飛": 0, "盗塁": 46, "その他出塁": 1, "出塁率": 0.696, "長打率": 0.739, "OPS": 1.436, "三振率": 0.107, "投球回": 12.67, "被安打": 20, "奪三振": 20, "与四死球": 19, "失点": 34, "投球数": 420, "失点率": 10.734, "奪三振率": 6.314, "被安打率": 6.314, "与四死球率": 5.998, "K/BB": 1.053, "WHIP": 3.078}, {"name": "田中 斗岐", "試合数": 3, "打席数": 7, "打数": 6, "安打": 2, "打率": 0.333, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 1, "三振": 0, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 0, "出塁率": 0.429, "長打率": 0.333, "OPS": 0.762, "三振率": 0.0, "投球回": 5.337, "被安打": 9, "奪三振": 9, "与四死球": 3, "失点": 10, "投球数": 88, "失点率": 7.495, "奪三振率": 6.745, "被安打率": 6.745, "与四死球率": 2.248, "K/BB": 3.0, "WHIP": 2.248}, {"name": "森畑 遥斗", "試合数": 27, "打席数": 49, "打数": 43, "安打": 17, "打率": 0.395, "単打": 12, "二塁打": 3, "三塁打": 0, "本塁打": 2, "打点": 9, "得点": 18, "四死球": 6, "三振": 11, "犠打": 0, "犠飛": 0, "盗塁": 19, "その他出塁": 0, "出塁率": 0.469, "長打率": 0.605, "OPS": 1.074, "三振率": 0.224, "投球回": 4.99, "被安打": 14, "奪三振": 5, "与四死球": 18, "失点": 20, "投球数": 200, "失点率": 16.032, "奪三振率": 4.008, "被安打率": 11.222, "与四死球率": 14.429, "K/BB": 0.278, "WHIP": 6.413}, {"name": "大田 結愛", "試合数": 28, "打席数": 52, "打数": 37, "安打": 13, "打率": 0.351, "単打": 11, "二塁打": 1, "三塁打": 1, "本塁打": 0, "打点": 5, "得点": 17, "四死球": 15, "三振": 15, "犠打": 0, "犠飛": 0, "盗塁": 25, "その他出塁": 0, "出塁率": 0.538, "長打率": 0.432, "OPS": 0.971, "三振率": 0.288, "投球回": 4.67, "被安打": 7, "奪三振": 10, "与四死球": 12, "失点": 19, "投球数": 173, "失点率": 16.274, "奪三振率": 8.565, "被安打率": 5.996, "与四死球率": 10.278, "K/BB": 0.833, "WHIP": 4.069}, {"name": "木綿谷 昇汰", "試合数": 27, "打席数": 34, "打数": 30, "安打": 5, "打率": 0.167, "単打": 4, "二塁打": 1, "三塁打": 0, "本塁打": 0, "打点": 1, "得点": 7, "四死球": 4, "三振": 13, "犠打": 0, "犠飛": 0, "盗塁": 11, "その他出塁": 1, "出塁率": 0.294, "長打率": 0.2, "OPS": 0.494, "三振率": 0.382, "投球回": 23.67, "被安打": 38, "奪三振": 31, "与四死球": 41, "失点": 54, "投球数": 599, "失点率": 9.125, "奪三振率": 5.239, "被安打率": 6.422, "与四死球率": 6.929, "K/BB": 0.756, "WHIP": 3.338}, {"name": "井藤 大翔", "試合数": 27, "打席数": 31, "打数": 24, "安打": 7, "打率": 0.292, "単打": 6, "二塁打": 1, "三塁打": 0, "本塁打": 0, "打点": 4, "得点": 8, "四死球": 7, "三振": 12, "犠打": 0, "犠飛": 0, "盗塁": 19, "その他出塁": 1, "出塁率": 0.484, "長打率": 0.333, "OPS": 0.817, "三振率": 0.387, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "村上 涼真", "試合数": 28, "打席数": 28, "打数": 18, "安打": 2, "打率": 0.111, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 2, "得点": 9, "四死球": 10, "三振": 9, "犠打": 0, "犠飛": 0, "盗塁": 11, "その他出塁": 1, "出塁率": 0.464, "長打率": 0.111, "OPS": 0.575, "三振率": 0.321, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "林 颯心", "試合数": 21, "打席数": 10, "打数": 8, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 2, "三振": 8, "犠打": 0, "犠飛": 0, "盗塁": 0, "その他出塁": 0, "出塁率": 0.2, "長打率": 0.0, "OPS": 0.2, "三振率": 0.8, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "清水 佑一郎", "試合数": 16, "打席数": 8, "打数": 6, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 2, "四死球": 2, "三振": 5, "犠打": 0, "犠飛": 0, "盗塁": 1, "その他出塁": 1, "出塁率": 0.375, "長打率": 0.0, "OPS": 0.375, "三振率": 0.625, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "中野 樹", "試合数": 30, "打席数": 55, "打数": 46, "安打": 8, "打率": 0.174, "単打": 6, "二塁打": 1, "三塁打": 0, "本塁打": 1, "打点": 4, "得点": 12, "四死球": 9, "三振": 17, "犠打": 0, "犠飛": 0, "盗塁": 20, "その他出塁": 2, "出塁率": 0.345, "長打率": 0.261, "OPS": 0.606, "三振率": 0.309, "投球回": 10.99, "被安打": 32, "奪三振": 19, "与四死球": 25, "失点": 46, "投球数": 455, "失点率": 16.742, "奪三振率": 6.915, "被安打率": 11.647, "与四死球率": 9.099, "K/BB": 0.76, "WHIP": 5.187}, {"name": "森畑 葵斗", "試合数": 30, "打席数": 64, "打数": 61, "安打": 30, "打率": 0.492, "単打": 18, "二塁打": 5, "三塁打": 3, "本塁打": 4, "打点": 9, "得点": 23, "四死球": 3, "三振": 13, "犠打": 0, "犠飛": 0, "盗塁": 27, "その他出塁": 1, "出塁率": 0.531, "長打率": 0.869, "OPS": 1.4, "三振率": 0.203, "投球回": 2.67, "被安打": 6, "奪三振": 4, "与四死球": 12, "失点": 14, "投球数": 141, "失点率": 20.974, "奪三振率": 5.993, "被安打率": 8.989, "与四死球率": 17.978, "K/BB": 0.333, "WHIP": 6.742}, {"name": "今鶴 蒼大", "試合数": 30, "打席数": 45, "打数": 30, "安打": 12, "打率": 0.4, "単打": 9, "二塁打": 2, "三塁打": 1, "本塁打": 0, "打点": 3, "得点": 14, "四死球": 15, "三振": 9, "犠打": 0, "犠飛": 0, "盗塁": 27, "その他出塁": 0, "出塁率": 0.6, "長打率": 0.533, "OPS": 1.133, "三振率": 0.2, "投球回": 4.0, "被安打": 10, "奪三振": 4, "与四死球": 9, "失点": 14, "投球数": 119, "失点率": 14.0, "奪三振率": 4.0, "被安打率": 10.0, "与四死球率": 9.0, "K/BB": 0.444, "WHIP": 4.75}, {"name": "大田 笑愛", "試合数": 30, "打席数": 33, "打数": 24, "安打": 3, "打率": 0.125, "単打": 3, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 3, "得点": 4, "四死球": 9, "三振": 11, "犠打": 0, "犠飛": 0, "盗塁": 15, "その他出塁": 0, "出塁率": 0.364, "長打率": 0.125, "OPS": 0.489, "三振率": 0.333, "投球回": 1.33, "被安打": 2, "奪三振": 3, "与四死球": 2, "失点": 4, "投球数": 37, "失点率": 12.03, "奪三振率": 9.023, "被安打率": 6.015, "与四死球率": 6.015, "K/BB": 1.5, "WHIP": 3.008}, {"name": "岸根 汐音", "試合数": 30, "打席数": 38, "打数": 23, "安打": 5, "打率": 0.217, "単打": 5, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 11, "四死球": 15, "三振": 14, "犠打": 0, "犠飛": 0, "盗塁": 24, "その他出塁": 3, "出塁率": 0.605, "長打率": 0.217, "OPS": 0.823, "三振率": 0.368, "投球回": 3.67, "被安打": 7, "奪三振": 7, "与四死球": 8, "失点": 14, "投球数": 106, "失点率": 15.259, "奪三振率": 7.629, "被安打率": 7.629, "与四死球率": 8.719, "K/BB": 0.875, "WHIP": 4.087}, {"name": "豊田 晃紳", "試合数": 30, "打席数": 44, "打数": 27, "安打": 8, "打率": 0.296, "単打": 8, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 2, "得点": 17, "四死球": 17, "三振": 12, "犠打": 0, "犠飛": 0, "盗塁": 32, "その他出塁": 1, "出塁率": 0.591, "長打率": 0.296, "OPS": 0.887, "三振率": 0.273, "投球回": 4.33, "被安打": 7, "奪三振": 8, "与四死球": 9, "失点": 13, "投球数": 129, "失点率": 12.009, "奪三振率": 7.39, "被安打率": 6.467, "与四死球率": 8.314, "K/BB": 0.889, "WHIP": 3.695}, {"name": "工藤 蓮大", "試合数": 15, "打席数": 7, "打数": 5, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 2, "三振": 5, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 1, "出塁率": 0.429, "長打率": 0.0, "OPS": 0.429, "三振率": 0.714, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}]}, "stats_recent": {"n": 5, "team": {"試合数": 5, "打席数": 136, "打数": 95, "安打": 26, "打率": 0.274, "単打": 18, "二塁打": 3, "三塁打": 2, "本塁打": 3, "打点": 7, "得点": 35, "四死球": 38, "三振": 39, "犠打": 0, "犠飛": 0, "盗塁": 64, "その他出塁": 3, "出塁率": 0.504, "長打率": 0.442, "OPS": 0.946, "三振率": 0.287, "投球回": 19.337, "被安打": 39, "奪三振": 31, "与四死球": 30, "失点": 59, "投球数": 474, "失点率": 12.205, "奪三振率": 6.413, "被安打率": 8.067, "与四死球率": 6.206, "K/BB": 1.033, "WHIP": 3.568}, "players": [{"name": "今鶴 陸", "試合数": 5, "打席数": 8, "打数": 6, "安打": 2, "打率": 0.333, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 2, "四死球": 2, "三振": 1, "犠打": 0, "犠飛": 0, "盗塁": 3, "その他出塁": 0, "出塁率": 0.5, "長打率": 0.333, "OPS": 0.833, "三振率": 0.125, "投球回": 0.67, "被安打": 2, "奪三振": 1, "与四死球": 1, "失点": 3, "投球数": 18, "失点率": 17.91, "奪三振率": 5.97, "被安打率": 11.94, "与四死球率": 5.97, "K/BB": 1.0, "WHIP": 4.478}, {"name": "田中 斗岐", "試合数": 3, "打席数": 7, "打数": 6, "安打": 2, "打率": 0.333, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 1, "三振": 0, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 0, "出塁率": 0.429, "長打率": 0.333, "OPS": 0.762, "三振率": 0.0, "投球回": 5.337, "被安打": 9, "奪三振": 9, "与四死球": 3, "失点": 10, "投球数": 88, "失点率": 7.495, "奪三振率": 6.745, "被安打率": 6.745, "与四死球率": 2.248, "K/BB": 3.0, "WHIP": 2.248}, {"name": "森畑 遥斗", "試合数": 5, "打席数": 6, "打数": 6, "安打": 3, "打率": 0.5, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 1, "打点": 2, "得点": 4, "四死球": 0, "三振": 1, "犠打": 0, "犠飛": 0, "盗塁": 4, "その他出塁": 0, "出塁率": 0.5, "長打率": 1.0, "OPS": 1.5, "三振率": 0.167, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "大田 結愛", "試合数": 5, "打席数": 11, "打数": 8, "安打": 4, "打率": 0.5, "単打": 4, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 1, "得点": 3, "四死球": 3, "三振": 1, "犠打": 0, "犠飛": 0, "盗塁": 7, "その他出塁": 0, "出塁率": 0.636, "長打率": 0.5, "OPS": 1.136, "三振率": 0.091, "投球回": 1.0, "被安打": 3, "奪三振": 2, "与四死球": 2, "失点": 6, "投球数": 46, "失点率": 24.0, "奪三振率": 8.0, "被安打率": 12.0, "与四死球率": 8.0, "K/BB": 1.0, "WHIP": 5.0}, {"name": "木綿谷 昇汰", "試合数": 5, "打席数": 6, "打数": 4, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 2, "三振": 1, "犠打": 0, "犠飛": 0, "盗塁": 0, "その他出塁": 0, "出塁率": 0.333, "長打率": 0.0, "OPS": 0.333, "三振率": 0.167, "投球回": 5.0, "被安打": 7, "奪三振": 7, "与四死球": 11, "失点": 16, "投球数": 127, "失点率": 12.8, "奪三振率": 5.6, "被安打率": 5.6, "与四死球率": 8.8, "K/BB": 0.636, "WHIP": 3.6}, {"name": "井藤 大翔", "試合数": 5, "打席数": 8, "打数": 6, "安打": 1, "打率": 0.167, "単打": 1, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 2, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 5, "その他出塁": 0, "出塁率": 0.375, "長打率": 0.167, "OPS": 0.542, "三振率": 0.5, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "村上 涼真", "試合数": 5, "打席数": 6, "打数": 3, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 2, "四死球": 3, "三振": 2, "犠打": 0, "犠飛": 0, "盗塁": 3, "その他出塁": 0, "出塁率": 0.5, "長打率": 0.0, "OPS": 0.5, "三振率": 0.333, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "林 颯心", "試合数": 5, "打席数": 5, "打数": 4, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 1, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 0, "その他出塁": 0, "出塁率": 0.2, "長打率": 0.0, "OPS": 0.2, "三振率": 0.8, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "清水 佑一郎", "試合数": 5, "打席数": 4, "打数": 3, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 1, "三振": 3, "犠打": 0, "犠飛": 0, "盗塁": 0, "その他出塁": 1, "出塁率": 0.5, "長打率": 0.0, "OPS": 0.5, "三振率": 0.75, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, {"name": "中野 樹", "試合数": 5, "打席数": 11, "打数": 8, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 3, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 3, "その他出塁": 0, "出塁率": 0.273, "長打率": 0.0, "OPS": 0.273, "三振率": 0.364, "投球回": 2.33, "被安打": 8, "奪三振": 3, "与四死球": 0, "失点": 5, "投球数": 36, "失点率": 8.584, "奪三振率": 5.15, "被安打率": 13.734, "与四死球率": 0.0, "K/BB": null, "WHIP": 3.433}, {"name": "森畑 葵斗", "試合数": 5, "打席数": 15, "打数": 15, "安打": 10, "打率": 0.667, "単打": 3, "二塁打": 3, "三塁打": 2, "本塁打": 2, "打点": 3, "得点": 6, "四死球": 0, "三振": 1, "犠打": 0, "犠飛": 0, "盗塁": 5, "その他出塁": 0, "出塁率": 0.667, "長打率": 1.533, "OPS": 2.2, "三振率": 0.067, "投球回": 0.0, "被安打": 1, "奪三振": 0, "与四死球": 2, "失点": 3, "投球数": 19, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": 0.0, "WHIP": null}, {"name": "今鶴 蒼大", "試合数": 5, "打席数": 14, "打数": 8, "安打": 2, "打率": 0.25, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 1, "得点": 6, "四死球": 6, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 12, "その他出塁": 0, "出塁率": 0.571, "長打率": 0.25, "OPS": 0.821, "三振率": 0.286, "投球回": 1.0, "被安打": 2, "奪三振": 2, "与四死球": 2, "失点": 2, "投球数": 25, "失点率": 8.0, "奪三振率": 8.0, "被安打率": 8.0, "与四死球率": 8.0, "K/BB": 1.0, "WHIP": 4.0}, {"name": "大田 笑愛", "試合数": 5, "打席数": 7, "打数": 5, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 2, "三振": 2, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 0, "出塁率": 0.286, "長打率": 0.0, "OPS": 0.286, "三振率": 0.286, "投球回": 0.33, "被安打": 2, "奪三振": 0, "与四死球": 1, "失点": 3, "投球数": 17, "失点率": 36.364, "奪三振率": 0.0, "被安打率": 24.242, "与四死球率": 12.121, "K/BB": 0.0, "WHIP": 9.091}, {"name": "岸根 汐音", "試合数": 5, "打席数": 13, "打数": 8, "安打": 2, "打率": 0.25, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 2, "四死球": 5, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 7, "その他出塁": 1, "出塁率": 0.615, "長打率": 0.25, "OPS": 0.865, "三振率": 0.308, "投球回": 1.0, "被安打": 2, "奪三振": 3, "与四死球": 3, "失点": 4, "投球数": 34, "失点率": 16.0, "奪三振率": 12.0, "被安打率": 8.0, "与四死球率": 12.0, "K/BB": 1.0, "WHIP": 5.0}, {"name": "豊田 晃紳", "試合数": 5, "打席数": 12, "打数": 5, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 5, "四死球": 7, "三振": 4, "犠打": 0, "犠飛": 0, "盗塁": 10, "その他出塁": 0, "出塁率": 0.583, "長打率": 0.0, "OPS": 0.583, "三振率": 0.333, "投球回": 2.67, "被安打": 3, "奪三振": 4, "与四死球": 5, "失点": 7, "投球数": 64, "失点率": 10.487, "奪三振率": 5.993, "被安打率": 4.494, "与四死球率": 7.491, "K/BB": 0.8, "WHIP": 2.996}, {"name": "工藤 蓮大", "試合数": 5, "打席数": 3, "打数": 3, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 0, "三振": 3, "犠打": 0, "犠飛": 0, "盗塁": 1, "その他出塁": 1, "出塁率": 0.333, "長打率": 0.0, "OPS": 0.333, "三振率": 1.0, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}]}, "player_pages": [{"name": "今鶴 陸", "total": {"name": "今鶴 陸", "打席数": 56, "打数": 46, "安打": 28, "打率": 0.609, "単打": 24, "二塁打": 3, "三塁打": 0, "本塁打": 1, "打点": 9, "得点": 31, "四死球": 10, "三振": 6, "犠打": 0, "犠飛": 0, "盗塁": 46, "その他出塁": 1, "出塁率": 0.696, "長打率": 0.739, "OPS": 1.436, "三振率": 0.107, "投球回": 12.67, "被安打": 20, "奪三振": 20, "与四死球": 19, "失点": 34, "投球数": 420, "失点率": 10.734, "奪三振率": 6.314, "被安打率": 6.314, "与四死球率": 5.998, "K/BB": 1.053, "WHIP": 3.078}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 2, "AB": 2, "H": 1, "s2B": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 1.0, "OPS": 1.5, "IP": 1.0, "HA": 2, "SO": 2, "BBp": 1, "ER": 3, "PC": 56, "ERA": 12.0, "WHIP": 3.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 3, "H": 3, "s1B": 3, "RBI": 2, "SB": 7, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 0.67, "HA": 3, "BBp": 3, "ER": 6, "PC": 43, "ERA": 35.821, "WHIP": 8.955}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 3, "H": 3, "s1B": 3, "SB": 6, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 2, "s1B": 2, "AVG": 0.667, "OBP": 0.667, "SLG": 0.667, "OPS": 1.333, "IP": 1.0, "HA": 1, "SO": 3, "BBp": 2, "ER": 1, "PC": 52, "ERA": 4.0, "WHIP": 3.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 3.0, "HA": 2, "BBp": 3, "ER": 3, "PC": 50, "ERA": 4.0, "WHIP": 1.667}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "BB": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 0.33, "HA": 1, "SO": 1, "BBp": 1, "ER": 3, "PC": 24, "ERA": 36.364, "WHIP": 6.061}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "SB": 4, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 3.0, "HA": 2, "SO": 4, "PC": 50, "ERA": 0.0, "WHIP": 0.667}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 3, "AB": 1, "H": 1, "s2B": 1, "BB": 2, "SB": 4, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0, "IP": 1.0, "SO": 2, "PC": 9, "ERA": 0.0, "WHIP": 0.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 3, "AB": 3, "H": 2, "s1B": 2, "RBI": 1, "SB": 2, "AVG": 0.667, "OBP": 0.667, "SLG": 0.667, "OPS": 1.333}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 1, "HR": 1, "RBI": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 4.0, "OPS": 5.0, "IP": 1.0, "HA": 0, "SO": 3, "BBp": 4, "ER": 2, "PC": 35, "ERA": 8.0, "WHIP": 4.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 3, "AB": 1, "H": 0, "BB": 2, "SB": 1, "AVG": 0.0, "OBP": 0.667, "SLG": 0.0, "OPS": 0.667, "IP": 0.67, "HA": 3, "SO": 1, "BBp": 2, "ER": 6, "PC": 35, "ERA": 35.821, "WHIP": 7.463}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s2B": 1, "K": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 1.0, "OPS": 1.5}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 3, "AB": 3, "H": 2, "s1B": 2, "RBI": 1, "SB": 2, "AVG": 0.667, "OBP": 0.667, "SLG": 0.667, "OPS": 1.333}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.33, "HA": 2, "SO": 1, "BBp": 1, "ER": 3, "PC": 23, "ERA": 36.364, "WHIP": 9.091}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "BB": 1, "K": 1, "other": 1, "SB": 3, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167, "HA": 1, "SO": 2, "BBp": 1, "ER": 3, "PC": 23}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "RBI": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "SB": 5, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "HA": 1, "ER": 1, "PC": 2}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 4, "AB": 3, "H": 1, "s1B": 1, "BB": 1, "K": 1, "SB": 2, "AVG": 0.333, "OBP": 0.5, "SLG": 0.333, "OPS": 0.833, "IP": 0.67, "HA": 2, "SO": 1, "BBp": 1, "ER": 3, "PC": 18, "ERA": 17.91, "WHIP": 4.478}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}]}, {"name": "田中 斗岐", "total": {"name": "田中 斗岐", "打席数": 7, "打数": 6, "安打": 2, "打率": 0.333, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 1, "四死球": 1, "三振": 0, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 0, "出塁率": 0.429, "長打率": 0.333, "OPS": 0.762, "三振率": 0.0, "投球回": 5.337, "被安打": 9, "奪三振": 9, "与四死球": 3, "失点": 10, "投球数": 88, "失点率": 7.495, "奪三振率": 6.745, "被安打率": 6.745, "与四死球率": 2.248, "K/BB": 3.0, "WHIP": 2.248}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.667, "SO": 2, "PC": 15, "ERA": 0.0, "WHIP": 0.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 1, "s1B": 1, "AVG": 0.333, "OBP": 0.333, "SLG": 0.333, "OPS": 0.667, "IP": 1.67, "HA": 2, "SO": 4, "BBp": 3, "ER": 5, "PC": 28, "ERA": 11.976, "WHIP": 2.994}]}, {"name": "森畑 遥斗", "total": {"name": "森畑 遥斗", "打席数": 49, "打数": 43, "安打": 17, "打率": 0.395, "単打": 12, "二塁打": 3, "三塁打": 0, "本塁打": 2, "打点": 9, "得点": 18, "四死球": 6, "三振": 11, "犠打": 0, "犠飛": 0, "盗塁": 19, "その他出塁": 0, "出塁率": 0.469, "長打率": 0.605, "OPS": 1.074, "三振率": 0.224, "投球回": 4.99, "被安打": 14, "奪三振": 5, "与四死球": 18, "失点": 20, "投球数": 200, "失点率": 16.032, "奪三振率": 4.008, "被安打率": 11.222, "与四死球率": 14.429, "K/BB": 0.278, "WHIP": 6.413}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 1, "H": 0, "BB": 2, "SB": 2, "AVG": 0.0, "OBP": 0.667, "SLG": 0.0, "OPS": 0.667}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 3, "H": 2, "s1B": 2, "RBI": 1, "SB": 1, "AVG": 0.667, "OBP": 0.667, "SLG": 0.667, "OPS": 1.333, "IP": 0.33, "HA": 2, "SO": 1, "BBp": 1, "ER": 3, "PC": 20, "ERA": 36.364, "WHIP": 9.091}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 3, "AB": 2, "H": 0, "RBI": 1, "BB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 1.0, "SO": 1, "BBp": 1, "PC": 18, "ERA": 0.0, "WHIP": 1.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.33, "HA": 2, "BBp": 3, "ER": 3, "PC": 35, "ERA": 9.023, "WHIP": 3.759}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 1.33, "HA": 4, "SO": 3, "BBp": 5, "ER": 4, "PC": 55, "ERA": 12.03, "WHIP": 6.767}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 0, "RBI": 1, "BB": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 3, "AB": 3, "H": 1, "s1B": 1, "RBI": 2, "AVG": 0.333, "OBP": 0.333, "SLG": 0.333, "OPS": 0.667}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 3, "AB": 3, "H": 1, "s1B": 1, "RBI": 1, "K": 1, "SB": 2, "AVG": 0.333, "OBP": 0.333, "SLG": 0.333, "OPS": 0.667, "HA": 4, "BBp": 3, "ER": 5, "PC": 30}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 2, "s1B": 1, "s2B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.5, "OPS": 2.5}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s2B": 1, "K": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 1.0, "OPS": 1.5, "IP": 1.0, "HA": 2, "SO": 0, "BBp": 5, "ER": 5, "PC": 42, "ERA": 20.0, "WHIP": 7.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 1, "s2B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 2, "s1B": 1, "HR": 1, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.5, "OPS": 3.5}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 2, "s1B": 1, "HR": 1, "RBI": 2, "K": 1, "SB": 2, "AVG": 0.667, "OBP": 0.667, "SLG": 1.667, "OPS": 2.333}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}]}, {"name": "大田 結愛", "total": {"name": "大田 結愛", "打席数": 52, "打数": 37, "安打": 13, "打率": 0.351, "単打": 11, "二塁打": 1, "三塁打": 1, "本塁打": 0, "打点": 5, "得点": 17, "四死球": 15, "三振": 15, "犠打": 0, "犠飛": 0, "盗塁": 25, "その他出塁": 0, "出塁率": 0.538, "長打率": 0.432, "OPS": 0.971, "三振率": 0.288, "投球回": 4.67, "被安打": 7, "奪三振": 10, "与四死球": 12, "失点": 19, "投球数": 173, "失点率": 16.274, "奪三振率": 8.565, "被安打率": 5.996, "与四死球率": 10.278, "K/BB": 0.833, "WHIP": 4.069}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "BBp": 2, "ER": 3, "PC": 21}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 1, "s1B": 1, "K": 2, "AVG": 0.333, "OBP": 0.333, "SLG": 0.333, "OPS": 0.667}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "SB": 4, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "BB": 1, "K": 1, "SB": 1, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 1, "OBP": 1.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "RBI": 1, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 0.67, "HA": 1, "SO": 2, "BBp": 2, "ER": 3, "PC": 23, "ERA": 17.91, "WHIP": 4.478}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0, "IP": 1.0, "SO": 1, "BBp": 1, "ER": 1, "PC": 15, "ERA": 4.0, "WHIP": 1.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 1, "s2B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0, "IP": 0.33, "HA": 2, "SO": 1, "BBp": 2, "ER": 3, "PC": 24, "ERA": 36.364, "WHIP": 12.121}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 3, "OBP": 1.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 2, "H": 2, "s1B": 1, "s3B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0, "IP": 1.0, "SO": 3, "BBp": 1, "PC": 22, "ERA": 0.0, "WHIP": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.67, "HA": 1, "SO": 1, "BBp": 2, "ER": 3, "PC": 22, "ERA": 17.91, "WHIP": 4.478}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 3, "AB": 3, "H": 2, "s1B": 2, "SB": 3, "AVG": 0.667, "OBP": 0.667, "SLG": 0.667, "OPS": 1.333}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "BB": 1, "SB": 1, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 2, "OBP": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.0, "HA": 3, "SO": 2, "BBp": 2, "ER": 6, "PC": 46, "ERA": 24.0, "WHIP": 5.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}]}, {"name": "木綿谷 昇汰", "total": {"name": "木綿谷 昇汰", "打席数": 34, "打数": 30, "安打": 5, "打率": 0.167, "単打": 4, "二塁打": 1, "三塁打": 0, "本塁打": 0, "打点": 1, "得点": 7, "四死球": 4, "三振": 13, "犠打": 0, "犠飛": 0, "盗塁": 11, "その他出塁": 1, "出塁率": 0.294, "長打率": 0.2, "OPS": 0.494, "三振率": 0.382, "投球回": 23.67, "被安打": 38, "奪三振": 31, "与四死球": 41, "失点": 54, "投球数": 599, "失点率": 9.125, "奪三振率": 5.239, "被安打率": 6.422, "与四死球率": 6.929, "K/BB": 0.756, "WHIP": 3.338}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.67, "HA": 2, "SO": 1, "BBp": 3, "ER": 3, "PC": 32, "ERA": 17.91, "WHIP": 7.463}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 2.0, "SO": 4, "BBp": 3, "ER": 1, "PC": 36, "ERA": 2.0, "WHIP": 1.5}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 3.0, "HA": 1, "SO": 4, "BBp": 2, "ER": 1, "PC": 47, "ERA": 1.333, "WHIP": 1.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 1.0, "HA": 2, "SO": 1, "BBp": 3, "ER": 3, "PC": 30, "ERA": 12.0, "WHIP": 5.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s2B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0, "IP": 2.0, "HA": 2, "SO": 1, "BBp": 3, "ER": 4, "PC": 53, "ERA": 8.0, "WHIP": 2.5}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "SB": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "SB": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 3.33, "HA": 8, "SO": 5, "BBp": 1, "ER": 6, "PC": 64, "ERA": 7.207, "WHIP": 2.703}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 0, "K": 2, "other": 1, "SB": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 2.0, "HA": 2, "BBp": 6, "ER": 4, "PC": 56, "ERA": 8.0, "WHIP": 4.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 2.0, "HA": 4, "SO": 4, "BBp": 5, "ER": 4, "PC": 58, "ERA": 8.0, "WHIP": 4.5}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 1.67, "HA": 8, "SO": 2, "BBp": 3, "ER": 7, "PC": 58, "ERA": 16.766, "WHIP": 6.587}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.0, "HA": 2, "SO": 2, "BBp": 1, "ER": 5, "PC": 38, "ERA": 20.0, "WHIP": 3.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 2, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333, "IP": 1.33, "HA": 5, "SO": 2, "BBp": 4, "ER": 7, "PC": 45, "ERA": 21.053, "WHIP": 6.767}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.0, "HA": 1, "SO": 2, "BBp": 4, "ER": 6, "PC": 46, "ERA": 24.0, "WHIP": 5.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 2.67, "HA": 1, "SO": 3, "BBp": 3, "ER": 3, "PC": 36, "ERA": 4.494, "WHIP": 1.498}]}, {"name": "井藤 大翔", "total": {"name": "井藤 大翔", "打席数": 31, "打数": 24, "安打": 7, "打率": 0.292, "単打": 6, "二塁打": 1, "三塁打": 0, "本塁打": 0, "打点": 4, "得点": 8, "四死球": 7, "三振": 12, "犠打": 0, "犠飛": 0, "盗塁": 19, "その他出塁": 1, "出塁率": 0.484, "長打率": 0.333, "OPS": 0.817, "三振率": 0.387, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 4, "OBP": 1.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s2B": 1, "RBI": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "RBI": 2, "K": 1, "other": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 2, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333}]}, {"name": "村上 涼真", "total": {"name": "村上 涼真", "打席数": 28, "打数": 18, "安打": 2, "打率": 0.111, "単打": 2, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 2, "得点": 9, "四死球": 10, "三振": 9, "犠打": 0, "犠飛": 0, "盗塁": 11, "その他出塁": 1, "出塁率": 0.464, "長打率": 0.111, "OPS": 0.575, "三振率": 0.321, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "AB": 0, "H": 0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "K": 1, "other": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 3, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}]}, {"name": "林 颯心", "total": {"name": "林 颯心", "打席数": 10, "打数": 8, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 2, "三振": 8, "犠打": 0, "犠飛": 0, "盗塁": 0, "その他出塁": 0, "出塁率": 0.2, "長打率": 0.0, "OPS": 0.2, "三振率": 0.8, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, "logs": [{"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "AB": 0, "H": 0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "AB": 0, "H": 0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "練習試合", "opponent": "川中西", "AB": 0, "H": 0}, {"date": "05/02", "type": "練習試合", "opponent": "川中西", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}]}, {"name": "清水 佑一郎", "total": {"name": "清水 佑一郎", "打席数": 8, "打数": 6, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 2, "四死球": 2, "三振": 5, "犠打": 0, "犠飛": 0, "盗塁": 1, "その他出塁": 1, "出塁率": 0.375, "長打率": 0.0, "OPS": 0.375, "三振率": 0.625, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, "logs": [{"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "AB": 0, "H": 0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "AB": 0, "H": 0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 1, "AB": 1, "H": 0, "K": 1, "other": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}]}, {"name": "中野 樹", "total": {"name": "中野 樹", "打席数": 55, "打数": 46, "安打": 8, "打率": 0.174, "単打": 6, "二塁打": 1, "三塁打": 0, "本塁打": 1, "打点": 4, "得点": 12, "四死球": 9, "三振": 17, "犠打": 0, "犠飛": 0, "盗塁": 20, "その他出塁": 2, "出塁率": 0.345, "長打率": 0.261, "OPS": 0.606, "三振率": 0.309, "投球回": 10.99, "被安打": 32, "奪三振": 19, "与四死球": 25, "失点": 46, "投球数": 455, "失点率": 16.742, "奪三振率": 6.915, "被安打率": 11.647, "与四死球率": 9.099, "K/BB": 0.76, "WHIP": 5.187}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.33, "HA": 2, "BBp": 1, "ER": 3, "PC": 35, "ERA": 36.364, "WHIP": 9.091}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.0, "HA": 3, "SO": 3, "BBp": 3, "ER": 3, "PC": 44, "ERA": 12.0, "WHIP": 6.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s2B": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 1.0, "OPS": 1.5}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.67, "HA": 1, "SO": 2, "BBp": 3, "ER": 6, "PC": 43, "ERA": 35.821, "WHIP": 5.97}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 0.33, "HA": 1, "BBp": 3, "ER": 2, "PC": 26, "ERA": 24.242, "WHIP": 12.121}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "RBI": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 1.0, "SO": 2, "BBp": 1, "PC": 18, "ERA": 0.0, "WHIP": 1.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 1, "H": 0, "RBI": 1, "BB": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "other": 1, "SB": 4, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 1.67, "HA": 4, "SO": 2, "BBp": 2, "ER": 7, "PC": 62, "ERA": 16.766, "WHIP": 3.593}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 0.0, "HA": 3, "SO": 0, "BBp": 3, "ER": 6, "PC": 46}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "RBI": 1, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.0, "HA": 1, "SO": 1, "BBp": 1, "ER": 2, "PC": 34, "ERA": 8.0, "WHIP": 2.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 1, "HR": 1, "RBI": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 2.0, "OPS": 2.5}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 0, "other": 1, "SB": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.33, "HA": 2, "SO": 3, "BBp": 3, "ER": 3, "PC": 38, "ERA": 9.023, "WHIP": 3.759}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "HA": 5, "BBp": 4, "ER": 6, "PC": 36}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 3, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.33, "HA": 2, "SO": 1, "BBp": 1, "ER": 3, "PC": 20, "ERA": 36.364, "WHIP": 9.091}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 2, "OBP": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 2, "H": 0, "BB": 1, "K": 2, "SB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333, "IP": 1.0, "HA": 2, "SO": 1, "ER": 1, "PC": 9, "ERA": 4.0, "WHIP": 2.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 1.33, "HA": 6, "SO": 2, "ER": 4, "PC": 27, "ERA": 12.03, "WHIP": 4.511}]}, {"name": "森畑 葵斗", "total": {"name": "森畑 葵斗", "打席数": 64, "打数": 61, "安打": 30, "打率": 0.492, "単打": 18, "二塁打": 5, "三塁打": 3, "本塁打": 4, "打点": 9, "得点": 23, "四死球": 3, "三振": 13, "犠打": 0, "犠飛": 0, "盗塁": 27, "その他出塁": 1, "出塁率": 0.531, "長打率": 0.869, "OPS": 1.4, "三振率": 0.203, "投球回": 2.67, "被安打": 6, "奪三振": 4, "与四死球": 12, "失点": 14, "投球数": 141, "失点率": 20.974, "奪三振率": 5.993, "被安打率": 8.989, "与四死球率": 17.978, "K/BB": 0.333, "WHIP": 6.742}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0, "IP": 0.0, "HA": 1, "BBp": 2, "ER": 2, "PC": 14}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 1.0, "HA": 2, "SO": 1, "BBp": 1, "ER": 2, "PC": 30, "ERA": 8.0, "WHIP": 3.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "SB": 3, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 1.67, "HA": 1, "SO": 3, "BBp": 4, "ER": 4, "PC": 60, "ERA": 9.581, "WHIP": 2.994}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 2, "AB": 2, "H": 2, "s2B": 2, "RBI": 1, "K": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 3, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 3, "AB": 3, "H": 1, "HR": 1, "RBI": 1, "AVG": 0.333, "OBP": 0.333, "SLG": 1.333, "OPS": 1.667}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 3, "AB": 3, "H": 1, "s1B": 1, "RBI": 1, "K": 1, "other": 1, "AVG": 0.333, "OBP": 0.333, "SLG": 0.333, "OPS": 0.667}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 2, "s1B": 1, "s3B": 1, "RBI": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0, "HA": 1, "BBp": 3, "ER": 3, "PC": 18}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 2, "H": 1, "HR": 1, "RBI": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 2.0, "OPS": 2.5}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "BB": 1, "SB": 3, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 3, "H": 3, "s1B": 1, "s3B": 1, "HR": 1, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.667, "OPS": 3.667}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 4, "AB": 4, "H": 3, "s1B": 1, "s2B": 2, "RBI": 1, "SB": 2, "AVG": 0.75, "OBP": 0.75, "SLG": 1.25, "OPS": 2.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 3, "H": 2, "s1B": 1, "s2B": 1, "SB": 2, "AVG": 0.667, "OBP": 0.667, "SLG": 1.0, "OPS": 1.667, "IP": 0.0, "HA": 1, "BBp": 2, "ER": 3, "PC": 19}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 3, "AB": 3, "H": 2, "s3B": 1, "HR": 1, "RBI": 1, "K": 1, "AVG": 0.667, "OBP": 0.667, "SLG": 2.333, "OPS": 3.0}]}, {"name": "今鶴 蒼大", "total": {"name": "今鶴 蒼大", "打席数": 45, "打数": 30, "安打": 12, "打率": 0.4, "単打": 9, "二塁打": 2, "三塁打": 1, "本塁打": 0, "打点": 3, "得点": 14, "四死球": 15, "三振": 9, "犠打": 0, "犠飛": 0, "盗塁": 27, "その他出塁": 0, "出塁率": 0.6, "長打率": 0.533, "OPS": 1.133, "三振率": 0.2, "投球回": 4.0, "被安打": 10, "奪三振": 4, "与四死球": 9, "失点": 14, "投球数": 119, "失点率": 14.0, "奪三振率": 4.0, "被安打率": 10.0, "与四死球率": 9.0, "K/BB": 0.444, "WHIP": 4.75}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "AB": 0, "H": 0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 0, "H": 0, "BB": 2, "OBP": 1.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 1, "OBP": 1.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 0, "SB": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.33, "HA": 2, "BBp": 2, "ER": 3, "PC": 16, "ERA": 36.364, "WHIP": 12.121}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "AB": 0, "H": 0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "RBI": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "HA": 1, "BBp": 2, "ER": 3, "PC": 17}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 1, "s2B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s2B": 1, "RBI": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 1.0, "OPS": 1.5, "IP": 1.0, "HA": 3, "BBp": 1, "ER": 2, "PC": 20, "ERA": 8.0, "WHIP": 4.0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 2, "H": 2, "s1B": 1, "s3B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 2.0, "OPS": 3.0, "IP": 1.0, "HA": 1, "SO": 1, "BBp": 1, "ER": 1, "PC": 19, "ERA": 4.0, "WHIP": 2.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0, "IP": 0.67, "HA": 1, "SO": 1, "BBp": 1, "ER": 3, "PC": 22, "ERA": 17.91, "WHIP": 2.985}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 2, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 4, "AB": 1, "H": 0, "BB": 3, "SB": 5, "AVG": 0.0, "OBP": 0.75, "SLG": 0.0, "OPS": 0.75, "IP": 1.0, "HA": 2, "SO": 2, "BBp": 2, "ER": 2, "PC": 25, "ERA": 8.0, "WHIP": 4.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 2, "H": 2, "s1B": 2, "RBI": 1, "BB": 1, "SB": 4, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}]}, {"name": "大田 笑愛", "total": {"name": "大田 笑愛", "打席数": 33, "打数": 24, "安打": 3, "打率": 0.125, "単打": 3, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 3, "得点": 4, "四死球": 9, "三振": 11, "犠打": 0, "犠飛": 0, "盗塁": 15, "その他出塁": 0, "出塁率": 0.364, "長打率": 0.125, "OPS": 0.489, "三振率": 0.333, "投球回": 1.33, "被安打": 2, "奪三振": 3, "与四死球": 2, "失点": 4, "投球数": 37, "失点率": 12.03, "奪三振率": 9.023, "被安打率": 6.015, "与四死球率": 6.015, "K/BB": 1.5, "WHIP": 3.008}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "RBI": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 0, "RBI": 1, "BB": 1, "SB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 3, "OBP": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 3, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 1.0, "HA": 0, "SO": 3, "BBp": 1, "ER": 1, "PC": 20, "ERA": 4.0, "WHIP": 1.0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 2, "OBP": 1.0, "IP": 0.33, "HA": 2, "BBp": 1, "ER": 3, "PC": 17, "ERA": 36.364, "WHIP": 9.091}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}]}, {"name": "岸根 汐音", "total": {"name": "岸根 汐音", "打席数": 38, "打数": 23, "安打": 5, "打率": 0.217, "単打": 5, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 11, "四死球": 15, "三振": 14, "犠打": 0, "犠飛": 0, "盗塁": 24, "その他出塁": 3, "出塁率": 0.605, "長打率": 0.217, "OPS": 0.823, "三振率": 0.368, "投球回": 3.67, "被安打": 7, "奪三振": 7, "与四死球": 8, "失点": 14, "投球数": 106, "失点率": 15.259, "奪三振率": 7.629, "被安打率": 7.629, "与四死球率": 8.719, "K/BB": 0.875, "WHIP": 4.087}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 2, "other": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 2, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "AB": 0, "H": 0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 4, "OBP": 1.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "K": 1, "other": 1, "SB": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0, "IP": 1.0, "HA": 2, "SO": 2, "BBp": 1, "ER": 2, "PC": 20, "ERA": 8.0, "WHIP": 3.0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0, "IP": 1.0, "HA": 1, "SO": 1, "BBp": 2, "ER": 2, "PC": 23, "ERA": 8.0, "WHIP": 3.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.67, "HA": 2, "SO": 1, "BBp": 2, "ER": 6, "PC": 29, "ERA": 35.821, "WHIP": 5.97}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 3, "AB": 2, "H": 1, "s1B": 1, "BB": 1, "K": 1, "AVG": 0.5, "OBP": 0.667, "SLG": 0.5, "OPS": 1.167}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 2, "OBP": 1.0, "IP": 1.0, "SO": 3, "BBp": 1, "ER": 1, "PC": 18, "ERA": 4.0, "WHIP": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 2, "H": 0, "BB": 1, "K": 2, "SB": 1, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333, "IP": 0.0, "HA": 2, "BBp": 2, "ER": 3, "PC": 16}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 3, "AB": 2, "H": 0, "BB": 1, "K": 1, "other": 1, "SB": 2, "AVG": 0.0, "OBP": 0.333, "SLG": 0.0, "OPS": 0.333}]}, {"name": "豊田 晃紳", "total": {"name": "豊田 晃紳", "打席数": 44, "打数": 27, "安打": 8, "打率": 0.296, "単打": 8, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 2, "得点": 17, "四死球": 17, "三振": 12, "犠打": 0, "犠飛": 0, "盗塁": 32, "その他出塁": 1, "出塁率": 0.591, "長打率": 0.296, "OPS": 0.887, "三振率": 0.273, "投球回": 4.33, "被安打": 7, "奪三振": 8, "与四死球": 9, "失点": 13, "投球数": 129, "失点率": 12.009, "奪三振率": 7.39, "被安打率": 6.467, "与四死球率": 8.314, "K/BB": 0.889, "WHIP": 3.695}, "logs": [{"date": "01/31", "type": "練習試合", "opponent": "藤山", "PA": 0, "AB": 0, "H": 0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "02/23", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 2, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/08", "type": "太陽家具杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "K": 1, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/21", "type": "幸太郎杯", "opponent": "藤山", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "03/28", "type": "幸太郎杯", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "幸太郎杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 2, "H": 0, "K": 2, "other": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "03/29", "type": "練習試合", "opponent": "恩田", "PA": 2, "AB": 2, "H": 2, "s1B": 2, "RBI": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "04/11", "type": "毎日新聞杯", "opponent": "厚東・西宇部・原", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "RBI": 1, "BB": 1, "SB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "04/12", "type": "毎日新聞杯", "opponent": "藤山", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "04/26", "type": "練習試合", "opponent": "華城", "AB": 0, "H": 0}, {"date": "05/02", "type": "協議会杯", "opponent": "常盤・琴芝", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 1, "OBP": 1.0}, {"date": "05/02", "type": "練習試合", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/16", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 1, "s1B": 1, "SB": 2, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 2, "AB": 1, "H": 0, "BB": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "PA": 1, "AB": 1, "H": 0, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0, "IP": 0.33, "HA": 2, "BBp": 2, "ER": 3, "PC": 20, "ERA": 36.364, "WHIP": 12.121}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 2, "OBP": 1.0, "IP": 0.33, "HA": 2, "SO": 1, "BBp": 2, "ER": 3, "PC": 29, "ERA": 36.364, "WHIP": 12.121}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 1, "H": 1, "s1B": 1, "BB": 1, "AVG": 1.0, "OBP": 1.0, "SLG": 1.0, "OPS": 2.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 2, "AB": 2, "H": 1, "s1B": 1, "SB": 4, "AVG": 0.5, "OBP": 0.5, "SLG": 0.5, "OPS": 1.0, "IP": 1.0, "SO": 3, "PC": 16, "ERA": 0.0, "WHIP": 0.0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "PA": 2, "AB": 2, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 2, "AB": 1, "H": 0, "BB": 1, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.5, "SLG": 0.0, "OPS": 0.5, "IP": 0.67, "HA": 2, "BBp": 2, "ER": 3, "PC": 18, "ERA": 17.91, "WHIP": 5.97}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 2, "AB": 0, "H": 0, "BB": 2, "SB": 3, "OBP": 1.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 3, "AB": 1, "H": 0, "BB": 2, "K": 1, "SB": 2, "AVG": 0.0, "OBP": 0.667, "SLG": 0.0, "OPS": 0.667, "IP": 1.0, "SO": 1, "BBp": 3, "ER": 2, "PC": 25, "ERA": 8.0, "WHIP": 3.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 3, "AB": 1, "H": 0, "BB": 2, "K": 1, "SB": 3, "AVG": 0.0, "OBP": 0.667, "SLG": 0.0, "OPS": 0.667, "IP": 1.0, "HA": 1, "SO": 3, "ER": 2, "PC": 21, "ERA": 8.0, "WHIP": 1.0}]}, {"name": "工藤 蓮大", "total": {"name": "工藤 蓮大", "打席数": 7, "打数": 5, "安打": 0, "打率": 0.0, "単打": 0, "二塁打": 0, "三塁打": 0, "本塁打": 0, "打点": 0, "得点": 0, "四死球": 2, "三振": 5, "犠打": 0, "犠飛": 0, "盗塁": 2, "その他出塁": 1, "出塁率": 0.429, "長打率": 0.0, "OPS": 0.429, "三振率": 0.714, "投球回": 0.0, "被安打": 0, "奪三振": 0, "与四死球": 0, "失点": 0, "投球数": 0, "失点率": null, "奪三振率": null, "被安打率": null, "与四死球率": null, "K/BB": null, "WHIP": null}, "logs": [{"date": "05/16", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "AB": 0, "H": 0}, {"date": "05/31", "type": "練習試合", "opponent": "川中西", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "06/27", "type": "練習試合", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "原ﾀｲｶﾞｰｽ", "AB": 0, "H": 0}, {"date": "07/11", "type": "練習試合", "opponent": "岬", "PA": 1, "AB": 0, "H": 0, "BB": 1, "OBP": 1.0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "AB": 0, "H": 0}, {"date": "07/12", "type": "練習試合", "opponent": "高千帆", "PA": 1, "AB": 0, "H": 0, "BB": 1, "SB": 1, "OBP": 1.0}, {"date": "07/20", "type": "セントラル硝子杯", "opponent": "恩田", "AB": 0, "H": 0}, {"date": "07/20", "type": "練習試合", "opponent": "神原・恩田", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "AB": 0, "H": 0}, {"date": "08/08", "type": "練習試合", "opponent": "常盤・琴芝", "PA": 1, "AB": 1, "H": 0, "K": 1, "other": 1, "SB": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}, {"date": "08/11", "type": "練習試合", "opponent": "下関ﾄﾞﾘｰﾑｽ", "PA": 1, "AB": 1, "H": 0, "K": 1, "AVG": 0.0, "OBP": 0.0, "SLG": 0.0, "OPS": 0.0}]}], "running": {"一周": {"dates": [{"colIdx": 2, "short": "09/17"}, {"colIdx": 3, "short": "10/01"}, {"colIdx": 4, "short": "11/19"}, {"colIdx": 5, "short": "12/17"}, {"colIdx": 6, "short": "01/28"}, {"colIdx": 7, "short": "02/25"}, {"colIdx": 8, "short": "04/29"}, {"colIdx": 9, "short": "05/24"}, {"colIdx": 10, "short": "06/06"}, {"colIdx": 11, "short": "07/18"}], "players": {"あおい": [20.54, 20.97, 20.46, 23.74, 19.18, 18.84, 18.68, 19.46, 18.77, 17.75], "あおと": [20.12, 19.05, 19.62, 18.83, 19.25, 17.84, 17.79, 18.46, 17.92, 18.45], "いつき": [null, 19.06, 18.59, 18.47, 18.56, 17.55, 17.8, 18.24, null, 18.6], "えま": [22.16, 21.45, 20.94, 20.54, null, 20.54, 19.89, 20.24, null, 19.61], "けいすけ": [17.81, 16.53, null, null, null, null, null, null, null, null], "こうしん": [18.17, 17.32, 17.47, 17.82, 17.84, 17.07, 17.19, 16.83, 17.69, 16.62], "しおん": [19.76, 22.34, 20.53, 19.74, 19.84, 19.04, 18.45, 18.55, 18.77, 17.78], "しょうた": [20.42, 19.56, 19.95, 19.37, 18.74, 18.62, 18.48, null, 17.65, 18.33], "とき": [null, null, 17.73, 16.8, 16.96, null, null, null, null, null], "はると": [null, 16.91, 18.1, 17.62, 19.03, 17.78, 17.79, null, 17.58, 17.74], "はるま": [18.78, 18.7, 18.9, 17.99, 18.28, 18.3, 17.5, 17.88, 17.13, null], "ゆういちろう": [null, null, null, null, null, null, 20.86, 22.13, 20.94, 21.19], "ゆま": [null, 19.82, 21.09, 19.61, 20.1, 19.88, 19.13, 19.16, 18.84, 18.77], "りく": [null, null, 19.71, 18.86, 17.98, 17.8, 17.97, null, null, 17.57], "りくと": [22.11, 21.36, 23.2, null, null, 21.4, 22.08, 20.76, 20.42, null], "りょうま": [22.49, 21.35, 22.8, 21.21, 20.72, 20.71, 19.34, 19.25, 19.16, 19.17], "れんと": [null, null, null, null, null, null, null, 23.25, 21.9, 20.42]}}, "一塁駆け抜け": {"dates": [{"colIdx": 2, "short": "01/28"}, {"colIdx": 3, "short": "06/03"}], "players": {"あおい": [4.5, 4.45], "あおと": [4.31, 4.44], "いつき": [4.16, 4.35], "こうしん": [4.2, 3.96], "しおん": [4.48, 4.52], "しょうた": [4.37, null], "とき": [3.81, null], "はると": [4.28, 4.06], "はるま": [4.1, 4.33], "ゆういちろう": [null, 5.1], "ゆま": [4.66, null], "りく": [4.19, null], "りょうま": [4.65, 4.43]}}, "二塁まで": {"dates": [{"colIdx": 2, "short": "06/03"}], "players": {"あおい": [9.38], "あおと": [9.05], "いつき": [8.94], "えま": [10.41], "こうしん": [8.63], "しおん": [10.15], "はると": [8.96], "はるま": [8.89], "ゆういちろう": [10.22], "りょうま": [10.72]}}}};
+let STORED_PW = "2584";
+
+const COLORS=['#4f8ef7','#f76b6b','#34d17a','#f7c34f','#b07ef7','#4fd1d9','#f7944f','#a3e635','#f76be8','#7fb4f7','#f76b9a','#34d1b0','#f7e34f','#c97ef7','#7af76b','#f7a34f'];
+const DASHES=[[],[6,3],[3,3],[8,3,3,3],[4,4],[10,4]];
+
+// ============================================================
+// パスワード認証
+// ============================================================
+var _adminStep=0;
+function checkPw(){
+  var inp=document.getElementById('pwInput');
+  var v=String(inp.value||'').replace(/\D/g,'');
+  var errEl=document.getElementById('pwErr');
+  if(_adminStep===1){
+    if(v==='1983'){
+      _adminStep=2;
+      var sub1=document.getElementById('pwSub');
+      if(sub1)sub1.textContent='管理者コードを入力してください（2回目）';
+      if(errEl)errEl.style.display='none';
+      inp.value='';
+      inp.focus();
+      return;
+    } else {
+      _adminStep=0;
+      var sub2=document.getElementById('pwSub');
+      var forgot2=document.getElementById('pwForgot');
+      if(sub2)sub2.textContent='4桁のパスワードを入力';
+      if(forgot2)forgot2.style.display='block';
+      if(errEl){errEl.style.display='block';}
+      inp.value='';
+      inp.focus();
+      return;
+    }
+  }
+  if(_adminStep===2){
+    if(v==='0519'){
+      _adminStep=0;
+      if(errEl)errEl.style.display='none';
+      document.getElementById('pwScreen').style.display='none';
+      document.getElementById('app').style.display='block';
+      if(window.innerWidth<=640){
+        document.getElementById('bottom-nav').style.display='flex';
+      }
+      initApp();
+      setTimeout(function(){
+        showPage('update');
+        var newPwEl=document.getElementById('newPwDisplay');
+        if(newPwEl){newPwEl.textContent='0519';}
+        var newPwBox=document.getElementById('newPwBox');
+        if(newPwBox){newPwBox.style.display='block';}
+        var m2=document.getElementById('newPwMsg2');
+        var m3=document.getElementById('newPwMsg3');
+        if(m2)m2.style.display='none';
+        if(m3)m3.style.display='block';
+      },100);
+      return;
+    } else {
+      _adminStep=0;
+      var sub3=document.getElementById('pwSub');
+      var forgot3=document.getElementById('pwForgot');
+      if(sub3)sub3.textContent='4桁のパスワードを入力';
+      if(forgot3)forgot3.style.display='block';
+      if(errEl){errEl.style.display='block';}
+      inp.value='';
+      inp.focus();
+      return;
+    }
+  }
+  if(v===String(STORED_PW)){
+    document.getElementById('pwScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    if(errEl)errEl.style.display='none';
+    if(window.innerWidth<=640){
+      document.getElementById('bottom-nav').style.display='flex';
+    }
+    initApp();
+  } else {
+    if(errEl){errEl.style.display='block';}
+    inp.value='';
+    inp.focus();
+  }
+}
+
+function enterAdminMode(){
+  _adminStep=1;
+  var sub=document.getElementById('pwSub');
+  var forgot=document.getElementById('pwForgot');
+  var errEl=document.getElementById('pwErr');
+  var inp=document.getElementById('pwInput');
+  if(sub)sub.textContent='管理者コードを入力してください（1回目）';
+  if(forgot)forgot.style.display='none';
+  if(errEl)errEl.style.display='none';
+  inp.value='';
+  inp.focus();
+}
+
+
+// ============================================================
+// 更新画面
+// ============================================================
+function openUpdate(){ document.getElementById('updateScreen').style.display='flex'; }
+function closeUpdate(){
+  document.getElementById('updateScreen').style.display='none';
+  document.getElementById('newPwBox').style.display='none';
+}
+// ウィンドウリサイズ時にボトムナビの表示を制御
+window.addEventListener('resize', function(){
+  var bn = document.getElementById('bottom-nav');
+  var appVisible = document.getElementById('app').style.display !== 'none';
+  if(appVisible){
+    bn.style.display = window.innerWidth <= 640 ? 'flex' : 'none';
+  }
+});
+
+const dropArea = document.getElementById('dropArea');
+const xlsxInput = document.getElementById('xlsxInput');
+dropArea.addEventListener('dragover',e=>{e.preventDefault();dropArea.classList.add('drag-over');});
+dropArea.addEventListener('dragleave',()=>dropArea.classList.remove('drag-over'));
+dropArea.addEventListener('drop',e=>{e.preventDefault();dropArea.classList.remove('drag-over');if(e.dataTransfer.files[0])handleXlsx(e.dataTransfer.files[0]);});
+xlsxInput.addEventListener('change',e=>{if(e.target.files[0])handleXlsx(e.target.files[0]);});
+
+function handleXlsx(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array',raw:true});
+      const newData=parseFullWorkbook(wb);
+      applyStatsUpdate(newData, file.name);
+    }catch(err){alert('読み込みエラー: '+err.message);console.error(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// 成績データを画面にその場で反映し、新パスワードを発行する（AI分析コメントはここでは更新しない）
+function applyStatsUpdate(newData, fileName){
+  SITEDATA = newData;
+  _inputCache = null;
+  _chartsBuilt = {batting:false, pitching:false};
+  initApp();
+  const pw=String(Math.floor(1000+Math.random()*9000));
+  STORED_PW = pw;
+  const info=document.getElementById('stats-update-info');
+  if(info){ info.style.display='block'; info.textContent='✓ '+fileName+' を反映しました'; }
+  document.getElementById('newPwDisplay').textContent=pw;
+  document.getElementById('newPwBox').style.display='flex';
+  const m2=document.getElementById('newPwMsg2');
+  const m3=document.getElementById('newPwMsg3');
+  if(m2)m2.style.display='block';
+  if(m3)m3.style.display='none';
+}
+
+// 今表示している状態（SITEDATA・パスワード込み）をHTMLファイルとして出力する
+// ここで出力したファイルと元の成績まとめExcelをClaude(claude.ai)に渡すと、
+// AI分析ページを追加した完全版HTMLを作ってもらえます
+function exportHtml(){
+  const curHtml=document.documentElement.outerHTML;
+  const newHtml=curHtml
+    .replace(/let SITEDATA = \{[\s\S]*?\};(?=\s*let STORED_PW)/,
+             'let SITEDATA = '+JSON.stringify(SITEDATA)+';')
+    .replace(/let STORED_PW = "\d{4}"/,`let STORED_PW = "${STORED_PW}"`)
+    .replace(/id="pwScreen" style="[^"]*"/,'id="pwScreen"')
+    .replace(/id="app" style="[^"]*"/,'id="app" style="display:none"');
+  const blob=new Blob([newHtml],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='index.html';a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+function parseFullWorkbook(wb){
+  function toF(v){if(v==null)return null;const n=parseFloat(v);return isNaN(n)||Math.abs(n)>9999?null:Math.round(n*1000)/1000;}
+  function toI(v){if(v==null)return null;const n=parseFloat(v);return isNaN(n)?null:Math.round(n);}
+  function dtToMmdd(v){
+    if(v instanceof Date)return `${String(v.getMonth()+1).padStart(2,'0')}/${String(v.getDate()).padStart(2,'0')}`;
+    if(typeof v==='string'&&v.match(/^\d{4}-\d{2}-\d{2}/)){const d=new Date(v);return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+    if(typeof v==='number'&&v>40000){const d=new Date(Date.UTC(1899,11,30)+v*86400000);return `${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')}`;}
+    return String(v||'');
+  }
+  const INT_KEYS=['試合数','打席数','打数','安打','単打','二塁打','三塁打','本塁打','打点','得点','四死球','三振','犠打','犠飛','盗塁','その他出塁','投球数','失点','被安打','奪三振','与四死球'];
+  const NON_PLAYER=['ﾛｰﾄﾞﾚｰｽ','26年戦績','入力','全ｽﾀｯﾂ','直近ｽﾀｯﾂ','公式戦ｽﾀｯﾂ','対戦T毎','記録ｼｰﾄ','Sheet1'];
+  const wsG=wb.Sheets['26年戦績'];
+  const rowsG=wsG?XLSX.utils.sheet_to_json(wsG,{header:1,defval:null,raw:true}):[];
+  const games=[];
+  rowsG.forEach(r=>{
+    if(!r||!r[0])return;const no=toI(r[0]);if(!no||no<=0)return;
+    const result=String(r[6]||'');if(!['○','●','＝'].includes(result))return;
+    games.push({no,date:dtToMmdd(r[1]),type:String(r[2]||''),place:String(r[3]||''),
+      opponent:String(r[5]||''),result,score:toI(r[7])||0,lost:toI(r[8])||0,note:String(r[9]||'')});
+  });
+  function parseStatsSheet(wsName){
+    const ws=wb.Sheets[wsName];if(!ws)return{team:{},players:[],n:0};
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+    const hi=rows.findIndex(r=>r&&r.some(c=>c==='選手名'));if(hi<0)return{team:{},players:[],n:0};
+    const hrow=rows[hi];const col={};hrow.forEach((c,j)=>{if(c)col[String(c)]=j;});
+    // n値: 「直近」の隣
+    let nVal=0;
+    for(let i=0;i<hi;i++){
+      const r=rows[i];if(!r)continue;
+      for(let j=0;j<r.length;j++){
+        if(r[j]==='直近'||(typeof r[j]==='string'&&r[j].includes('直近'))){
+          for(let k=j+1;k<Math.min(j+3,r.length);k++){
+            if(typeof r[k]==='number'&&r[k]>0&&r[k]<50&&r[k]===Math.round(r[k])){nVal=r[k];break;}
+          }
+          if(nVal>0)break;
+        }
+      }
+      if(nVal>0)break;
+    }
+    // チーム計: row[0]またはrow[1]に'チーム'を含む
+    let team={};
+    for(let i=hi-1;i>=Math.max(0,hi-5);i--){
+      const r=rows[i];if(!r)continue;
+      if(String(r[0]||'').includes('チーム')||String(r[1]||'').includes('チーム')){
+        for(const[k,j]of Object.entries(col)){if(k==='選手名')continue;team[k]=INT_KEYS.includes(k)?toI(r[j]):toF(r[j]);}
+        break;
+      }
+    }
+    const players=[];const seen=new Set();
+    for(let i=hi+2;i<rows.length;i++){
+      const r=rows[i];if(!r)continue;
+      const ni=col['選手名']??0;const nm=r[ni];if(!nm)continue;
+      const name=String(nm).trim().replace('\u3000',' ');
+      if(!name||name.startsWith('列')||seen.has(name))continue;
+      seen.add(name);
+      const p={name};
+      for(const[k,j]of Object.entries(col)){if(k==='選手名')continue;p[k]=INT_KEYS.includes(k)?toI(r[j]):toF(r[j]);}
+      players.push(p);
+    }
+    return{team,players,n:nVal};
+  }
+  const allS=parseStatsSheet('全ｽﾀｯﾂ');const recS=parseStatsSheet('直近ｽﾀｯﾂ');
+  const playerPages=[];const seenSheets=new Set();
+  for(const sname of wb.SheetNames){
+    if(NON_PLAYER.includes(sname)||seenSheets.has(sname))continue;
+    const ws=wb.Sheets[sname];if(!ws)continue;
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+    let playerName=null;
+    for(const r of rows.slice(0,8)){
+      if(!r)continue;
+      for(const c of r){if(c&&typeof c==='string'&&c.includes('\u3000')&&c.trim().length>=4&&!c.includes('計')){playerName=c.trim().replace('\u3000',' ');break;}}
+      if(playerName)break;
+    }
+    if(!playerName)continue;seenSheets.add(sname);
+    const hi=rows.findIndex(r=>r&&r.some(c=>c==='日付')&&r.some(c=>c==='選手名'));if(hi<0)continue;
+    const hrow=rows[hi];const col={};hrow.forEach((c,j)=>{if(c)col[String(c)]=j;});
+    const total={name:playerName};
+    for(let i=hi-1;i>=Math.max(0,hi-4);i--){
+      const r=rows[i];if(!r)continue;const ni=col['選手名']??3;
+      if(ni<r.length&&r[ni]&&String(r[ni]).includes('\u3000')){
+        for(const[k,j]of Object.entries(col)){if(['日付','試合種別','対戦T','選手名'].includes(k))continue;total[k]=INT_KEYS.includes(k)?toI(r[j]):toF(r[j]);}
+        break;
+      }
+    }
+    const logs=[];
+    for(let i=hi+2;i<rows.length;i++){
+      const r=rows[i];if(!r)continue;
+      const dv=r[col['日付']??0];if(!dv&&dv!==0)continue;
+      const ds=dtToMmdd(dv);if(!ds||ds==='0'||ds.includes('NaN'))continue;
+      const log={
+        date:ds,type:String(r[col['試合種別']??1]||''),opponent:String(r[col['対戦T']??2]||''),
+        PA:toI(r[col['打席数']]),AB:toI(r[col['打数']]),H:toI(r[col['安打']]),
+        s1B:toI(r[col['単打']]),s2B:toI(r[col['二塁打']]),s3B:toI(r[col['三塁打']]),
+        HR:toI(r[col['本塁打']]),RBI:toI(r[col['打点']]),BB:toI(r[col['四死球']]),
+        K:toI(r[col['三振']]),SH:toI(r[col['犠打']]),SF:toI(r[col['犠飛']]),
+        other:toI(r[col['その他出塁']]),SB:toI(r[col['盗塁']]),
+        AVG:toF(r[col['打率']]),OBP:toF(r[col['出塁率']]),SLG:toF(r[col['長打率']]),OPS:toF(r[col['OPS']]),
+        IP:toF(r[col['投球回']]),HA:toI(r[col['被安打']]),SO:toI(r[col['奪三振']]),
+        BBp:toI(r[col['与四死球']]),ER:toI(r[col['失点']]),PC:toI(r[col['投球数']]),
+        ERA:toF(r[col['失点率']]),WHIP:toF(r[col['WHIP']])
+      };
+      const clean={};for(const[k,v]of Object.entries(log)){if(v!==null)clean[k]=v;}
+      logs.push(clean);
+    }
+    playerPages.push({name:playerName,total,logs});
+  }
+  return{games,stats_all:{team:allS.team,players:allS.players},
+    stats_recent:{n:recS.n,team:recS.team,players:recS.players},player_pages:playerPages};
+}
+
+// ============================================================
+// ナビゲーション
+// ============================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={results:0,batting:1,pitching:2,players:3,running:4,ai:5};
+  const navItems=document.querySelectorAll('.nav-item');
+  if(map[id]!==undefined) navItems[map[id]].classList.add('active');
+  const bnItems=document.querySelectorAll('.bn-item');
+  if(map[id]!==undefined) bnItems[map[id]].classList.add('active');
+  window.scrollTo(0,0);
+  // グラフはページが表示されてから描画（CSSのdisplay反映後に実行）
+  if(id==='batting') requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>_refreshCharts('batting'),0)));
+  if(id==='pitching') requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>_refreshCharts('pitching'),0)));
+}
+const TREND_BATTING=[
+  {key:'打率',   higher:true,  yMin:0,    yMax:1.0},
+  {key:'出塁率', higher:true,  yMin:0,    yMax:1.0},
+  {key:'長打率', higher:true,  yMin:0,    yMax:1.2},
+  {key:'OPS',   higher:true,  yMin:0,    yMax:2.0},
+  {key:'三振率', higher:false, yMin:0,    yMax:0.8},
+];
+const TREND_PITCHING=[
+  {key:'失点率',     higher:false, yMin:0,  yMax:20},
+  {key:'奪三振率',   higher:true,  yMin:0,  yMax:12},
+  {key:'被安打率',   higher:false, yMin:0,  yMax:15},
+  {key:'与四死球率', higher:false, yMin:0,  yMax:15},
+  {key:'K/BB',      higher:true,  yMin:0,  yMax:4},
+  {key:'WHIP',      higher:false, yMin:0,  yMax:8},
+];
+let _chartsBuilt={batting:false,pitching:false};
+function _refreshCharts(section){
+  if(_chartsBuilt[section]) return;
+  _chartsBuilt[section]=true;
+  if(section==='batting') buildTrendGroup('batting-chart-section', TREND_BATTING);
+  if(section==='pitching') buildTrendGroup('pitching-chart-section', TREND_PITCHING);
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+function initApp(){
+  buildResults();
+  buildBatting('all');
+  buildPitching('all');
+  buildPlayerGrid();
+  initRunCharts();
+  initAiPage();
+  // 打撃ページは初期表示なので即描画
+  setTimeout(()=>_refreshCharts('batting'),100);
+}
+
+// ============================================================
+// AI分析
+// ============================================================
+function initAiPage(){
+  if(typeof AI_RESULTS==='undefined') return;
+  const cBox=document.getElementById('ai-comment-box');
+  const oBox=document.getElementById('ai-order-box');
+  if(cBox) cBox.textContent=AI_RESULTS.comment||'';
+  if(oBox) oBox.textContent=AI_RESULTS.order||'';
+  const sel=document.getElementById('ai-player-select');
+  if(sel){
+    sel.innerHTML=SITEDATA.player_pages.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+    renderAiPlayerComment();
+  }
+}
+function switchAiTab(tab){
+  ['comment','order','player'].forEach(t=>{
+    document.getElementById('ai-tab-'+t).style.display = t===tab?'block':'none';
+    document.getElementById('aibtn-'+t).classList.toggle('active', t===tab);
+  });
+}
+function renderAiPlayerComment(){
+  const sel=document.getElementById('ai-player-select');
+  const box=document.getElementById('ai-player-box');
+  if(!sel||!box||typeof AI_RESULTS==='undefined') return;
+  const name=sel.value;
+  box.textContent=(AI_RESULTS.players&&AI_RESULTS.players[name])||'コメントがありません';
+}
+
+// ============================================================
+// 試合結果
+// ============================================================
+function buildResults(){
+  const G = SITEDATA.games.filter(g=>g.no>0&&['○','●','＝'].includes(g.result));
+  const wins=G.filter(g=>g.result==='○').length;
+  const losses=G.filter(g=>g.result==='●').length;
+  const draws=G.filter(g=>g.result==='＝').length;
+  const totalScore=G.reduce((a,g)=>a+g.score,0);
+  const totalLost=G.reduce((a,g)=>a+g.lost,0);
+
+  document.getElementById('results-sub').textContent=`${G.length}試合 / 更新日: ${new Date().toLocaleDateString('ja-JP')}`;
+  document.getElementById('results-summary').innerHTML=`
+    <div class="s-card"><div class="s-label">試合数</div><div class="s-val" style="color:var(--accent)">${G.length}</div></div>
+    <div class="s-card"><div class="s-label">勝利</div><div class="s-val" style="color:var(--good)">${wins}</div></div>
+    <div class="s-card"><div class="s-label">敗戦</div><div class="s-val" style="color:var(--bad)">${losses}</div></div>
+    <div class="s-card"><div class="s-label">引分</div><div class="s-val" style="color:var(--draw)">${draws}</div></div>
+    <div class="s-card"><div class="s-label">総得点</div><div class="s-val">${totalScore}</div></div>
+    <div class="s-card"><div class="s-label">総失点</div><div class="s-val">${totalLost}</div></div>
+  `;
+  const tbody=document.querySelector('#results-table tbody');
+  tbody.innerHTML=G.map(g=>{
+    const rc=g.result==='○'?'win':g.result==='●'?'loss':'draw';
+    return `<tr>
+      <td>${g.no}</td><td>${g.date}</td>
+      <td class="td-left">${g.type}</td>
+      <td>${g.place}</td>
+      <td class="td-left">${g.opponent}</td>
+      <td class="${rc}">${g.result}</td>
+      <td>${g.score}</td><td>${g.lost}</td>
+      <td class="td-left" style="font-size:11px;color:var(--muted)">${g.note}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// チームスタッツ
+// ============================================================
+const BATTING_COLS=[
+  {key:'試合数',fmt:0,higher:true},
+  {key:'打席数',fmt:0,higher:true},{key:'打数',fmt:0,higher:true},
+  {key:'安打',fmt:0,higher:true},{key:'打率',fmt:3,higher:true},
+  {key:'単打',fmt:0,higher:true},{key:'二塁打',fmt:0,higher:true},
+  {key:'三塁打',fmt:0,higher:true},{key:'本塁打',fmt:0,higher:true},
+  {key:'打点',fmt:0,higher:true},{key:'得点',fmt:0,higher:true},
+  {key:'四死球',fmt:0,higher:true},{key:'三振',fmt:0,higher:false},
+  {key:'犠打',fmt:0,higher:true},{key:'犠飛',fmt:0,higher:true},
+  {key:'盗塁',fmt:0,higher:true},{key:'その他出塁',fmt:0,higher:true},
+  {key:'出塁率',fmt:3,higher:true},{key:'長打率',fmt:3,higher:true},
+  {key:'OPS',fmt:3,higher:true},{key:'三振率',fmt:3,higher:false},
+];
+const PITCHING_COLS=[
+  {key:'投球回',fmt:2,higher:true},{key:'被安打',fmt:0,higher:false},
+  {key:'奪三振',fmt:0,higher:true},{key:'与四死球',fmt:0,higher:false},
+  {key:'失点',fmt:0,higher:false},{key:'投球数',fmt:0,higher:false},
+  {key:'失点率',fmt:3,higher:false},{key:'奪三振率',fmt:3,higher:true},
+  {key:'被安打率',fmt:3,higher:false},{key:'与四死球率',fmt:3,higher:false},
+  {key:'K/BB',fmt:3,higher:true},{key:'WHIP',fmt:3,higher:false},
+];
+
+// --------------------------------------------------------
+// 打撃スタッツ
+// --------------------------------------------------------
+function buildBatting(mode){
+  const data = mode==='all' ? SITEDATA.stats_all : SITEDATA.stats_recent;
+  const n = SITEDATA.stats_recent.n;
+  document.getElementById('batting-sub').textContent =
+    mode==='all'
+      ? `全${SITEDATA.games.filter(g=>['○','●','＝'].includes(g.result)).length}試合`
+      : `直近 ${n} 試合`;
+  // 全体表示時: 直近データを傾向比較に、直近表示時: 全体データを比較元に
+  const trendPlayers = mode==='all' ? SITEDATA.stats_recent.players : SITEDATA.stats_all.players;
+  buildStatsTable('batting-table-section', BATTING_COLS, data.players, data.team, trendPlayers, TREND_KEYS_BATTING);
+  // グラフはswitchBatting/showPage経由で描画
+}
+function switchBatting(mode, btn){
+  document.querySelectorAll('#page-batting .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  buildBatting(mode);
+  _chartsBuilt['batting']=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>_refreshCharts('batting'),0)));
+}
+
+// --------------------------------------------------------
+// 投手スタッツ
+// --------------------------------------------------------
+function buildPitching(mode){
+  const data = mode==='all' ? SITEDATA.stats_all : SITEDATA.stats_recent;
+  const n = SITEDATA.stats_recent.n;
+  document.getElementById('pitching-sub').textContent =
+    mode==='all'
+      ? `全${SITEDATA.games.filter(g=>['○','●','＝'].includes(g.result)).length}試合`
+      : `直近 ${n} 試合`;
+  const pitchers = data.players.filter(p=>p['投球回']&&p['投球回']>0);
+  const trendAll = mode==='all' ? SITEDATA.stats_recent.players : SITEDATA.stats_all.players;
+  buildStatsTable('pitching-table-section', PITCHING_COLS, pitchers, data.team, trendAll, TREND_KEYS_PITCHING);
+  // グラフはswitchPitching/showPage経由で描画
+}
+function switchPitching(mode, btn){
+  document.querySelectorAll('#page-pitching .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  buildPitching(mode);
+  _chartsBuilt['pitching']=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>_refreshCharts('pitching'),0)));
+}
+
+// --------------------------------------------------------
+// 傾向バッジ対象キー（全体 vs 直近で注目する項目）
+// --------------------------------------------------------
+const TREND_KEYS_BATTING  = new Set(['打率','出塁率','OPS','三振率','盗塁']);
+const TREND_KEYS_PITCHING = new Set(['失点率','WHIP','奪三振率','与四死球率']);
+
+function trendBadge(allVal, recVal, higher){
+  if(allVal==null||isNaN(allVal)||recVal==null||isNaN(recVal)) return '';
+  const diff = recVal - allVal;
+  const pct  = allVal===0 ? 0 : Math.abs(diff/allVal);
+  if(pct < 0.03) return ''; // 3%未満は無視
+  const up = diff > 0;
+  const good = higher ? up : !up;
+  const arrow = up ? '↑' : '↓';
+  const color = good ? 'var(--good)' : 'var(--bad)';
+  return `<span style="font-size:11px;font-weight:700;color:${color};margin-left:3px">${arrow}</span>`;
+}
+
+// --------------------------------------------------------
+// 共通: スタッツ表
+// --------------------------------------------------------
+function buildStatsTable(containerId, cols, players, team, trendPlayers, trendKeys){
+  const rankMap={};
+  cols.forEach(c=>{
+    const vals=players.map(p=>({name:p.name,v:p[c.key]})).filter(x=>x.v!=null&&!isNaN(x.v));
+    vals.sort((a,b)=>c.higher?b.v-a.v:a.v-b.v);
+    rankMap[c.key]={};
+    vals.slice(0,3).forEach((x,i)=>rankMap[c.key][x.name]=i+1);
+  });
+  const html=`
+    <div style="margin-bottom:8px">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--surface2)">選手名</th>${cols.map(c=>`<th>${c.key}</th>`).join('')}</tr></thead>
+        <tbody>
+          <tr style="background:rgba(79,142,247,0.08)">
+            <td class="td-left" style="position:sticky;left:0;z-index:1;background:rgba(25,28,45,0.98);color:var(--accent);font-weight:600">チーム計</td>
+            ${cols.map(c=>{const v=team&&team[c.key]!=null&&!isNaN(team[c.key])?team[c.key]:null;
+              return `<td style="color:var(--accent);font-weight:600">${v==null?'—':c.fmt===0?v:v.toFixed(c.fmt)}</td>`;
+            }).join('')}
+          </tr>
+          ${players.map(p=>{
+            const tp=trendPlayers?trendPlayers.find(x=>x.name===p.name):null;
+            return `<tr><td class="td-left" style="position:sticky;left:0;z-index:1;background:var(--surface)">${p.name}</td>${cols.map(c=>{
+            const v=p[c.key]; if(v==null||isNaN(v)) return '<td>—</td>';
+            const r=rankMap[c.key][p.name];
+            const cls=r===1?(c.higher?'top1':'bad-top1'):r===2?(c.higher?'top2':'bad-top2'):r===3?(c.higher?'top3':'bad-top3'):'';
+            const disp=c.fmt===0?v:v.toFixed(c.fmt);
+            const badge=(trendKeys&&trendKeys.has(c.key)&&tp)?trendBadge(p[c.key],tp[c.key],c.higher):'';
+            return `<td class="${cls}">${disp}${badge}</td>`;
+          }).join('')}</tr>`;
+          }).join('')}</tbody>
+      </table></div>
+    </div>`;
+  document.getElementById(containerId).innerHTML=html;
+}
+
+// --------------------------------------------------------
+// 共通: 推移グラフ群を containerId に描画
+// --------------------------------------------------------
+let _statsCharts={};
+function buildTrendGroup(containerId, trends){
+  // 既存チャート破棄
+  Object.keys(_statsCharts).filter(k=>k.startsWith(containerId)).forEach(k=>{
+    try{_statsCharts[k].destroy();}catch(e){}
+    delete _statsCharts[k];
+  });
+  const container=document.getElementById(containerId);
+  if(!container) return;
+  const inp=buildInputCache();
+
+  // 現在選択中のインデックス
+  let _curIdx=0;
+
+  // ボタン行
+  const btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;';
+
+  // グラフ用カード（1枚だけ）
+  const card=document.createElement('div');
+  card.className='chart-card';
+
+  const badgeEl=document.createElement('span');
+  badgeEl.className='badge';
+  badgeEl.style.marginLeft='8px';
+
+  const h3=document.createElement('h3');
+  h3.style.cssText='font-size:13px;font-weight:500;margin-bottom:8px;display:flex;align-items:center;gap:4px;';
+  const titleSpan=document.createElement('span');
+  h3.appendChild(titleSpan);
+  h3.appendChild(badgeEl);
+
+  const teamPill=document.createElement('div');
+  teamPill.className='team-pill';
+  teamPill.innerHTML='<span class="pill-line"></span>チーム全体（白太線）';
+
+  const legendEl=document.createElement('div');
+  legendEl.className='legend';
+  legendEl.style.marginBottom='8px';
+
+  const cvWrap=document.createElement('div');
+  cvWrap.style.cssText='position:relative;width:100%;height:260px;';
+  const cvEl=document.createElement('canvas');
+  cvEl.id='cv_'+containerId;
+  cvWrap.appendChild(cvEl);
+
+  const note=document.createElement('p');
+  note.style.cssText='font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono);';
+  note.textContent='※ 各点はその日までの全試合累積値。凡例クリックで表示切替。';
+
+  card.appendChild(h3);
+  card.appendChild(teamPill);
+  card.appendChild(legendEl);
+  card.appendChild(cvWrap);
+  card.appendChild(note);
+
+  container.innerHTML='';
+  container.appendChild(btnRow);
+  container.appendChild(card);
+
+  function renderIdx(idx){
+    _curIdx=idx;
+    const t=trends[idx];
+    // ボタンのactive更新
+    btnRow.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===idx));
+    // バッジ・タイトル更新
+    titleSpan.textContent=t.key+' 推移';
+    badgeEl.className='badge '+(t.higher?'good':'bad');
+    badgeEl.textContent=t.higher?'▲ 高いほど良い':'▼ 低いほど良い';
+    // 既存チャート破棄
+    const cid='cv_'+containerId;
+    if(_statsCharts[cid]){try{_statsCharts[cid].destroy();}catch(e){}delete _statsCharts[cid];}
+    legendEl.innerHTML='';
+    _drawTrendChart(cid, legendEl, t, inp);
+  }
+
+  // ボタン生成
+  trends.forEach((t,i)=>{
+    const btn=document.createElement('button');
+    btn.textContent=t.key;
+    btn.style.cssText='padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;cursor:pointer;transition:background .15s,color .15s;';
+    btn.addEventListener('mouseover',()=>{if(!btn.classList.contains('active'))btn.style.background='var(--surface2)';});
+    btn.addEventListener('mouseout',()=>{if(!btn.classList.contains('active'))btn.style.background='var(--surface)';});
+    btn.addEventListener('click',()=>renderIdx(i));
+    btnRow.appendChild(btn);
+  });
+
+  // アクティブボタンスタイル
+  const styleId='trend-btn-style-'+containerId;
+  if(!document.getElementById(styleId)){
+    const s=document.createElement('style');
+    s.id=styleId;
+    s.textContent=`#${containerId} button.active{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important;}`;
+    document.head.appendChild(s);
+  }
+
+  renderIdx(0);
+}
+
+let _inputCache=null;
+function buildInputCache(){
+  if(_inputCache) return _inputCache;
+  _inputCache=SITEDATA.player_pages.flatMap(pp=>pp.logs.map(l=>({...l,player:pp.name})));
+  return _inputCache;
+}
+function calcCumulative(statKey, logs){
+  const pitchStats=['失点率','奪三振率','被安打率','与四死球率','K/BB','WHIP'];
+  function mmddSort(a,b){const f=s=>{const[m,d]=s.split('/').map(Number);return(m>=9?m:m+12)*100+d;};return f(a)-f(b);}
+  const dates=[...new Set(logs.map(l=>l.date).filter(Boolean))].sort(mmddSort);
+  const players=[...new Set(logs.map(l=>l.player))].sort();
+  function calcStat(c,key){
+    const AB=c.AB||0,PA=c.PA||0,H=c.H||0,s1B=c.s1B||0,s2B=c.s2B||0,s3B=c.s3B||0,HR=c.HR||0;
+    const BB=c.BB||0,SF=c.SF||0,other=c.other||0,IP=c.IP||0,SO=c.SO||0,HA=c.HA||0,BBp=c.BBp||0,ER=c.ER||0;
+    if(key==='打率') return AB>0?H/AB:null;
+    if(key==='出塁率'){const d=AB+BB+SF+other;return d>0?(H+BB+other)/d:null;}
+    if(key==='長打率'){const tb=s1B+s2B*2+s3B*3+HR*4;return AB>0?tb/AB:null;}
+    if(key==='OPS'){const obpD=AB+BB+SF+other,obp=obpD>0?(H+BB+other)/obpD:0,tb=s1B+s2B*2+s3B*3+HR*4,slg=AB>0?tb/AB:0;return PA>0?obp+slg:null;}
+    if(key==='三振率') return PA>0?(c.K||0)/PA:null;
+    if(key==='失点率') return IP>0?ER/IP*4:null;
+    if(key==='奪三振率') return IP>0?SO/IP*4:null;
+    if(key==='被安打率') return IP>0?HA/IP*4:null;
+    if(key==='与四死球率') return IP>0?BBp/IP*4:null;
+    if(key==='K/BB') return BBp>0?SO/BBp:null;
+    if(key==='WHIP') return IP>0?(HA+BBp)/IP:null;
+    return null;
+  }
+  const playerSeries={};
+  players.forEach(p=>{
+    const pl=logs.filter(l=>l.player===p);
+    const c={PA:0,AB:0,H:0,s1B:0,s2B:0,s3B:0,HR:0,BB:0,K:0,SF:0,other:0,IP:0,HA:0,SO:0,BBp:0,ER:0};
+    let hadPA=false,hadIP=false;
+    playerSeries[p]=dates.map(d=>{
+      const rr=pl.filter(l=>l.date===d);
+      if(rr.length>0){
+        rr.forEach(r=>{c.PA+=(r.PA||0);c.AB+=(r.AB||0);c.H+=(r.H||0);c.s1B+=(r.s1B||0);c.s2B+=(r.s2B||0);c.s3B+=(r.s3B||0);c.HR+=(r.HR||0);c.BB+=(r.BB||0);c.K+=(r.K||0);c.SF+=(r.SF||0);c.other+=(r.other||0);c.IP+=(r.IP||0);c.HA+=(r.HA||0);c.SO+=(r.SO||0);c.BBp+=(r.BBp||0);c.ER+=(r.ER||0);});
+        if(rr.some(r=>(r.PA||0)>0))hadPA=true;
+        if(rr.some(r=>(r.IP||0)>0))hadIP=true;
+      }
+      const ip=pitchStats.includes(statKey);
+      if(ip&&!hadIP)return null;if(!ip&&!hadPA)return null;
+      const v=calcStat(c,statKey);return v!==null?+v.toFixed(3):null;
+    });
+  });
+  const tc={PA:0,AB:0,H:0,s1B:0,s2B:0,s3B:0,HR:0,BB:0,K:0,SF:0,other:0,IP:0,HA:0,SO:0,BBp:0,ER:0};
+  const teamSeries=dates.map(d=>{
+    logs.filter(l=>l.date===d).forEach(r=>{tc.PA+=(r.PA||0);tc.AB+=(r.AB||0);tc.H+=(r.H||0);tc.s1B+=(r.s1B||0);tc.s2B+=(r.s2B||0);tc.s3B+=(r.s3B||0);tc.HR+=(r.HR||0);tc.BB+=(r.BB||0);tc.K+=(r.K||0);tc.SF+=(r.SF||0);tc.other+=(r.other||0);tc.IP+=(r.IP||0);tc.HA+=(r.HA||0);tc.SO+=(r.SO||0);tc.BBp+=(r.BBp||0);tc.ER+=(r.ER||0);});
+    const v=calcStat(tc,statKey);return v!==null?+v.toFixed(3):null;
+  });
+  return{dates,playerSeries,teamSeries};
+}
+function _drawTrendChart(canvasId, legendId, t, inp){
+  const {dates,playerSeries,teamSeries}=calcCumulative(t.key, inp);
+  const active=Object.keys(playerSeries).filter(p=>playerSeries[p].some(v=>v!==null));
+  const datasets=active.map((p,i)=>{
+    const pts=playerSeries[p].map((v,j)=>v!==null?{x:j,y:v}:null).filter(Boolean);
+    const col=COLORS[i%COLORS.length];
+    return{label:p,data:pts,borderColor:col+'bb',backgroundColor:col+'bb',borderWidth:1.5,
+      borderDash:DASHES[i%DASHES.length],pointRadius:3,pointHoverRadius:6,
+      tension:0.3,spanGaps:false,order:2};
+  });
+  const teamPts=teamSeries.map((v,j)=>v!==null?{x:j,y:v}:null).filter(Boolean);
+  datasets.push({label:'チーム全体',data:teamPts,borderColor:'#fff',backgroundColor:'#fff',
+    borderWidth:3,pointRadius:4,pointHoverRadius:7,pointBackgroundColor:'#fff',
+    pointBorderColor:'#0f1117',pointBorderWidth:2,tension:0.3,spanGaps:false,order:1});
+  const ctx=document.getElementById(canvasId);
+  if(!ctx) return;
+  const chart=new Chart(ctx,{type:'line',data:{datasets},options:{
+    responsive:true,maintainAspectRatio:false,animation:{duration:200},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d27',
+      borderColor:'rgba(255,255,255,.1)',borderWidth:1,titleColor:'#7a7f99',bodyColor:'#e8eaf0',
+      callbacks:{
+        title:items=>'～'+dates[items[0].parsed.x]+' 積算',
+        label:item=>`${item.dataset.label==='チーム全体'?'★ チーム全体':'   '+item.dataset.label}：${item.parsed.y.toFixed(3)}`
+      }}},
+    scales:{
+      x:{type:'linear',min:0,max:Math.max(0,dates.length-1),
+        ticks:{stepSize:1,callback:v=>dates[v]??'',autoSkip:false,maxRotation:45,
+          color:'#7a7f99',font:{size:10}},
+        grid:{color:'rgba(255,255,255,.04)'},border:{color:'rgba(255,255,255,.08)'}},
+      y:{min:t.yMin,max:t.yMax,
+        ticks:{color:'#7a7f99',font:{size:10},callback:v=>v.toFixed(2)},
+        grid:{color:'rgba(255,255,255,.04)'},border:{color:'rgba(255,255,255,.08)'}}
+    }
+  }});
+  _statsCharts[canvasId]=chart;
+  // 凡例
+  const area=(typeof legendId==='string')?document.getElementById(legendId):legendId;
+  if(!area) return;
+  area.innerHTML='';
+  active.forEach((p,i)=>{
+    const col=COLORS[i%COLORS.length];
+    const el=document.createElement('span');
+    el.className='leg';
+    el.innerHTML=`<span class="leg-sw" style="background:${col}"></span>${p}`;
+    el.addEventListener('click',()=>{
+      const ds=chart.data.datasets.find(d=>d.label===p);
+      if(ds){ds.hidden=!ds.hidden;el.classList.toggle('off',ds.hidden);chart.update();}
+    });
+    area.appendChild(el);
+  });
+}
+
+// ============================================================
+// 選手一覧
+// ============================================================
+function buildPlayerGrid(){
+  const grid=document.getElementById('player-grid');
+  const allPlayers=SITEDATA.stats_all.players;
+  grid.innerHTML=allPlayers.map(p=>{
+    const ops=p['OPS']!=null?p['OPS'].toFixed(3):'—';
+    const g=p['試合数']||0;
+    return `<div class="player-card" data-name="${p.name}" onclick="showPlayerDetail(this.dataset.name)">
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-games">${g}試合</div>
+      <div class="pc-ops">${ops}</div>
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono)">OPS</div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// 選手個人ページ
+// ============================================================
+function buildStatsTableHighlight(containerId, cols, players, team, highlight){
+  const rankMap={};
+  cols.forEach(c=>{
+    const vals=players.map(p=>({name:p.name,v:p[c.key]})).filter(x=>x.v!=null&&!isNaN(x.v));
+    vals.sort((a,b)=>c.higher?b.v-a.v:a.v-b.v);
+    rankMap[c.key]={};
+    vals.slice(0,3).forEach((x,i)=>rankMap[c.key][x.name]=i+1);
+  });
+  const fmtVal=(p,c)=>{
+    const v=p[c.key]; if(v==null||isNaN(v)) return '<td>—</td>';
+    const r=rankMap[c.key][p.name];
+    const cls=r===1?(c.higher?'top1':'bad-top1'):r===2?(c.higher?'top2':'bad-top2'):r===3?(c.higher?'top3':'bad-top3'):'';
+    return `<td class="${cls}">${c.fmt===0?v:v.toFixed(c.fmt)}</td>`;
+  };
+  const html=`
+    <div style="margin-bottom:8px">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="position:sticky;left:0;z-index:2;background:var(--surface2)">選手名</th>${cols.map(c=>`<th>${c.key}</th>`).join('')}</tr></thead>
+        <tbody>
+          <tr style="background:rgba(79,142,247,0.08)">
+            <td class="td-left" style="position:sticky;left:0;z-index:1;background:rgba(25,28,45,0.98);color:var(--accent);font-weight:600">チーム計</td>
+            ${cols.map(c=>{const v=team&&team[c.key]!=null&&!isNaN(team[c.key])?team[c.key]:null;
+              return `<td style="color:var(--accent);font-weight:600">${v==null?'—':c.fmt===0?v:v.toFixed(c.fmt)}</td>`;
+            }).join('')}
+          </tr>
+          ${players.map(p=>{
+            const isHL=p.name===highlight;
+            const bgName=isHL?'rgba(20,30,60,0.98)':'var(--surface)';
+            return `<tr style="${isHL?'background:rgba(79,142,247,0.15);':''}"><td class="td-left" style="position:sticky;left:0;z-index:1;background:${bgName};${isHL?'color:var(--accent);font-weight:700;':''}">${p.name}</td>${cols.map(c=>fmtVal(p,c)).join('')}</tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+  document.getElementById(containerId).innerHTML=html;
+}
+function showPlayerDetail(name){
+  const pp=SITEDATA.player_pages.find(p=>p.name===name);
+  const sa=SITEDATA.stats_all.players.find(p=>p.name===name)||{};
+  if(!pp) return;
+  showPage('player-detail');
+
+  const t=pp.total||{};
+  const initials=name.replace(' ','').slice(-1);
+  const games=t['試合数']||sa['試合数']||0;
+
+  const batting=[
+    {label:'試合数',val:sa['試合数'],fmt:0},
+    {label:'打席数',val:sa['打席数'],fmt:0},{label:'打数',val:sa['打数'],fmt:0},
+    {label:'安打',val:sa['安打'],fmt:0},{label:'打率',val:sa['打率'],fmt:3},
+    {label:'単打',val:sa['単打'],fmt:0},{label:'二塁打',val:sa['二塁打'],fmt:0},
+    {label:'三塁打',val:sa['三塁打'],fmt:0},{label:'本塁打',val:sa['本塁打'],fmt:0},
+    {label:'打点',val:sa['打点'],fmt:0},{label:'得点',val:sa['得点'],fmt:0},
+    {label:'四死球',val:sa['四死球'],fmt:0},{label:'三振',val:sa['三振'],fmt:0},
+    {label:'犠打',val:sa['犠打'],fmt:0},{label:'犠飛',val:sa['犠飛'],fmt:0},
+    {label:'盗塁',val:sa['盗塁'],fmt:0},{label:'その他出塁',val:sa['その他出塁'],fmt:0},
+    {label:'出塁率',val:sa['出塁率'],fmt:3},{label:'長打率',val:sa['長打率'],fmt:3},
+    {label:'OPS',val:sa['OPS'],fmt:3},{label:'三振率',val:sa['三振率'],fmt:3},
+  ];
+  const hasPitch=sa['投球回']&&sa['投球回']>0;
+  const pitching=hasPitch?[
+    {label:'投球回',val:sa['投球回'],fmt:2},{label:'被安打',val:sa['被安打'],fmt:0},
+    {label:'奪三振',val:sa['奪三振'],fmt:0},{label:'与四死球',val:sa['与四死球'],fmt:0},
+    {label:'失点',val:sa['失点'],fmt:0},{label:'投球数',val:sa['投球数'],fmt:0},
+    {label:'失点率',val:sa['失点率'],fmt:3},{label:'奪三振率',val:sa['奪三振率'],fmt:3},
+    {label:'被安打率',val:sa['被安打率'],fmt:3},{label:'与四死球率',val:sa['与四死球率'],fmt:3},
+    {label:'K/BB',val:sa['K/BB'],fmt:3},{label:'WHIP',val:sa['WHIP'],fmt:3},
+  ]:[];
+
+  const badgeRow=(arr)=>arr.map(s=>{
+    const v=s.val!=null?s.fmt===0?s.val:s.val.toFixed(s.fmt):'—';
+    return `<div class="stat-badge"><div class="sb-label">${s.label}</div><div class="sb-val">${v}</div></div>`;
+  }).join('');
+
+  const logs=pp.logs||[];
+  const fv=(v,d)=>v!=null&&!isNaN(v)?(d===0?String(v):Number(v).toFixed(d)):'—';
+  const logsHtml=logs.length?`
+    <h3 style="font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;margin-bottom:8px;margin-top:20px">試合別成績（打撃）</h3>
+    <div class="tbl-wrap" style="margin-bottom:12px"><table>
+      <thead><tr>
+        <th>日付</th><th>種別</th><th>対戦</th>
+        <th>打席</th><th>打数</th><th>安打</th><th>打率</th>
+        <th>単打</th><th>二塁打</th><th>三塁打</th><th>本塁打</th>
+        <th>打点</th><th>得点</th><th>四死球</th><th>三振</th>
+        <th>犠打</th><th>犠飛</th><th>盗塁</th><th>その他</th>
+        <th>出塁率</th><th>長打率</th><th>OPS</th><th>三振率</th>
+      </tr></thead>
+      <tbody>${logs.map(l=>`<tr>
+        <td>${l.date}</td>
+        <td style="font-size:10px">${l.type||'—'}</td>
+        <td class="td-left" style="font-size:10px">${l.opponent||'—'}</td>
+        <td>${fv(l.PA,0)}</td><td>${fv(l.AB,0)}</td><td>${fv(l.H,0)}</td><td>${fv(l.AVG,3)}</td>
+        <td>${fv(l.s1B,0)}</td><td>${fv(l.s2B,0)}</td><td>${fv(l.s3B,0)}</td><td>${fv(l.HR,0)}</td>
+        <td>${fv(l.RBI,0)}</td><td>${fv(l.SB,0)}</td><td>${fv(l.BB,0)}</td><td>${fv(l.K,0)}</td>
+        <td>${fv(l.SH,0)}</td><td>${fv(l.SF,0)}</td><td>${fv(l.SB,0)}</td><td>${fv(l.other,0)}</td>
+        <td>${fv(l.OBP,3)}</td><td>${fv(l.SLG,3)}</td><td>${fv(l.OPS,3)}</td>
+        <td>${l.PA>0?fv((l.K||0)/l.PA,3):'—'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    ${logs.some(l=>(l.IP||0)>0||l.HA!=null||l.SO!=null||l.BBp!=null||l.ER!=null||l.PC!=null)?`
+    <h3 style="font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;margin-bottom:8px">試合別成績（投手）</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>日付</th><th>種別</th><th>対戦</th>
+        <th>投球回</th><th>被安打</th><th>奪三振</th><th>与四死球</th>
+        <th>失点</th><th>投球数</th><th>失点率</th><th>奪三振率</th>
+        <th>被安打率</th><th>与四死球率</th><th>K/BB</th><th>WHIP</th>
+      </tr></thead>
+      <tbody>${logs.filter(l=>(l.IP||0)>0||l.HA!=null||l.SO!=null||l.BBp!=null||l.ER!=null||l.PC!=null).map(l=>`<tr>
+        <td>${l.date}</td>
+        <td style="font-size:10px">${l.type||'—'}</td>
+        <td class="td-left" style="font-size:10px">${l.opponent||'—'}</td>
+        <td>${fv(l.IP,2)}</td><td>${fv(l.HA,0)}</td><td>${fv(l.SO,0)}</td><td>${fv(l.BBp,0)}</td>
+        <td>${fv(l.ER,0)}</td><td>${fv(l.PC,0)}</td><td>${fv(l.ERA,3)}</td>
+        <td>${l.IP>0?fv((l.SO||0)/l.IP*4,3):'—'}</td>
+        <td>${l.IP>0?fv((l.HA||0)/l.IP*4,3):'—'}</td>
+        <td>${l.IP>0?fv((l.BBp||0)/l.IP*4,3):'—'}</td>
+        <td>${(l.BBp||0)>0?fv((l.SO||0)/l.BBp,3):'—'}</td>
+        <td>${fv(l.WHIP,3)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:''}
+  `:
+    '<p style="font-size:13px;color:var(--muted)">試合データなし</p>';
+
+  document.getElementById('player-detail-content').innerHTML=`
+    <div class="player-header">
+      <div class="player-avatar">${initials}</div>
+      <div><div class="player-name">${name}</div><div class="player-games">${games}試合出場</div></div>
+    </div>
+    <h3 style="font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;margin-bottom:8px">打撃成績</h3>
+    <div class="tbl-wrap" style="margin-bottom:16px"><table>
+      <thead><tr>${batting.map(s=>`<th>${s.label}</th>`).join('')}</tr></thead>
+      <tbody><tr>${batting.map(s=>{const v=s.val!=null?s.fmt===0?s.val:s.val.toFixed(s.fmt):'—';return `<td>${v}</td>`;}).join('')}</tr></tbody>
+    </table></div>
+    ${hasPitch?`
+    <h3 style="font-size:13px;color:var(--muted);font-family:var(--mono);letter-spacing:.06em;margin-bottom:8px">投手成績</h3>
+    <div class="tbl-wrap" style="margin-bottom:16px"><table>
+      <thead><tr>${pitching.map(s=>`<th>${s.label}</th>`).join('')}</tr></thead>
+      <tbody><tr>${pitching.map(s=>{const v=s.val!=null?s.fmt===0?s.val:s.val.toFixed(s.fmt):'—';return `<td>${v}</td>`;}).join('')}</tr></tbody>
+    </table></div>`:''}
+    ${logsHtml}
+  `;
+}
+
+// ============================================================
+// 走塁タイム
+// ============================================================
+const RUN_EXCLUDE=['チーム平均','チームベスト','ベスト','ワースト','ギャップ','トライ','平均'];
+const RUN_COLORS=['#4f8ef7','#f76b6b','#34d17a','#f7c34f','#b07ef7','#4fd1d9','#f7944f','#a3e635','#f76be8','#7fb4f7','#f76b9a','#34d1b0','#f7e34f','#c97ef7','#7af76b','#f7a34f','#ff9999'];
+const RUN_DASHES=[[],[6,3],[3,3],[8,3,3,3],[4,4],[10,4]];
+let runCharts={lap:null,first:null,second:null};
+let runHidden={lap:{},first:{},second:{}};
+window.addEventListener('DOMContentLoaded',function(){
+  var drop2=document.getElementById('runDropArea2');
+  var inp2=document.getElementById('runXlsxInput2');
+  if(drop2){
+    drop2.addEventListener('dragover',function(e){e.preventDefault();drop2.classList.add('drag-over');});
+    drop2.addEventListener('dragleave',function(){drop2.classList.remove('drag-over');});
+    drop2.addEventListener('drop',function(e){
+      e.preventDefault();drop2.classList.remove('drag-over');
+      var f=e.dataTransfer.files[0];
+      if(f){handleRunXlsx(f);var info=document.getElementById('run-update-info');if(info){info.style.display='block';info.textContent='✓ '+f.name;}}
+    });
+  }
+  if(inp2){
+    inp2.addEventListener('change',function(e){
+      var f=e.target.files[0];
+      if(f){handleRunXlsx(f);var info=document.getElementById('run-update-info');if(info){info.style.display='block';info.textContent='✓ '+f.name;}}
+    });
+  }
+});
+function initRunCharts(){
+  if(!SITEDATA.running) return;
+  const runMap={'一周':['lap','runLapCanvas','run-lap-legend','run-lap-card'],
+    '一塁駆け抜け':['first','runFirstCanvas','run-first-legend','run-first-card'],
+    '二塁まで':['second','runSecondCanvas','run-second-legend','run-second-card']};
+  var hasAny=false;
+  Object.entries(SITEDATA.running).forEach(function([sname,d]){
+    var args=runMap[sname]; if(!args) return;
+    var key=args[0],canvasId=args[1],legendId=args[2],cardId=args[3];
+    var hasData=Object.values(d.players).some(function(v){return v.some(function(x){return x!==null;});});
+    document.getElementById(cardId).style.display=hasData?'block':'none';
+    if(hasData){
+      buildRunTable(key,sname,d);
+      buildRunLineChart(key,canvasId,legendId,d);
+      hasAny=true;
+    }
+  });
+  if(hasAny){
+    document.getElementById('run-empty').style.display='none';
+    document.getElementById('run-charts').style.display='block';
+    var fi=document.getElementById('run-file-info');
+    if(fi){fi.style.display='none';}
+    var bar=document.getElementById('run-info-bar');
+    if(bar) bar.style.display='none';
+  }
+}
+function handleRunXlsx(file){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var wb=XLSX.read(ev.target.result,{type:'array',raw:true});
+      document.getElementById('run-err').style.display='none';
+      document.getElementById('run-empty').style.display='none';
+      document.getElementById('run-charts').style.display='block';
+      var fi=document.getElementById('run-file-info');
+      if(fi){fi.style.display='block';fi.textContent='読込済: '+file.name+' | '+new Date().toLocaleString('ja-JP');}
+      // 走塁タイムは「即時反映」仕様のため、ファイルの自己書き換え・ダウンロードは行わない
+      // （このExcelを開くたびにブラウザ上でグラフを再描画するのみ。恒久的に保存したい場合は
+      //   成績まとめExcelと同様にClaudeへ渡してSITEDATAへの組み込みを依頼してください）
+      [['一周','lap','runLapCanvas','run-lap-legend','run-lap-card'],
+       ['一塁駆け抜け','first','runFirstCanvas','run-first-legend','run-first-card'],
+       ['二塁まで','second','runSecondCanvas','run-second-legend','run-second-card']
+      ].forEach(function(args){
+        var sname=args[0],key=args[1],canvasId=args[2],legendId=args[3],cardId=args[4];
+        if(!wb.SheetNames.includes(sname)){document.getElementById(cardId).style.display='none';return;}
+        var d=parseRunSheet(wb,sname);
+        var hasData=Object.values(d.players).some(function(v){return v.some(function(x){return x!==null;});});
+        document.getElementById(cardId).style.display=hasData?'block':'none';
+        if(hasData){
+          buildRunTable(key,sname,d);
+          buildRunLineChart(key,canvasId,legendId,d);
+        }
+      });
+    }catch(err){
+      var el=document.getElementById('run-err');
+      if(el){el.textContent='読み込みエラー: '+err.message;el.style.display='block';}
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function parseRunSheet(wb,sheetName){
+  var ws=wb.Sheets[sheetName];
+  // cellDates:true で日付をDateオブジェクトとして取得
+  var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true,cellDates:true});
+  var dateRowIdx=-1,dateCols=[];
+  for(var i=0;i<Math.min(rows.length,8);i++){
+    var r=rows[i]||[];var dc=[];
+    r.forEach(function(cell,j){
+      var short=null;
+      if(cell instanceof Date&&!isNaN(cell)){
+        // 年ラベル(2025/2026等の小さいシリアル値)が誤変換されると1900〜1910年代になる
+        // 2000年以降の日付のみ有効とする
+        if(cell.getFullYear()>=2000){
+          short=String(cell.getMonth()+1).padStart(2,'0')+'/'+String(cell.getDate()).padStart(2,'0');
+        }
+      } else if(typeof cell==='string'){
+        var m=cell.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+        if(m)short=String(+m[2]).padStart(2,'0')+'/'+String(+m[3]).padStart(2,'0');
+      } else if(typeof cell==='number'&&cell>40000&&cell<60000){
+        var d=new Date(Date.UTC(1899,11,30)+cell*86400000);
+        short=String(d.getUTCMonth()+1).padStart(2,'0')+'/'+String(d.getUTCDate()).padStart(2,'0');
+      }
+      if(short)dc.push({colIdx:j,short:short});
+    });
+    // 日付列が1つ以上ある行を日付行とみなす（ただし2000年以降フィルタ済み）
+    if(dc.length>=1){dateRowIdx=i;dateCols=dc;break;}
+  }
+  if(dateRowIdx<0)throw new Error(sheetName+': 日付行が見つかりません');
+
+  // 名前列を動的判定：日付列の最小colIdxより左で、データ行に文字列が入っている列
+  var firstDateCol=Math.min.apply(null,dateCols.map(function(d){return d.colIdx;}));
+  var nameCol=-1;
+  for(var i=dateRowIdx+1;i<Math.min(rows.length,dateRowIdx+6);i++){
+    var r=rows[i];if(!r)continue;
+    for(var j=0;j<firstDateCol;j++){
+      if(r[j]!=null&&typeof r[j]==='string'&&r[j].trim().length>0){nameCol=j;break;}
+    }
+    if(nameCol>=0)break;
+  }
+  if(nameCol<0)nameCol=firstDateCol-1>=0?firstDateCol-1:0;
+
+  var players={};
+  for(var i=dateRowIdx+1;i<rows.length;i++){
+    var r=rows[i];if(!r||r[nameCol]==null)continue;
+    var ns=String(r[nameCol]).trim();
+    if(!ns||RUN_EXCLUDE.some(function(k){return ns.includes(k);}))continue;
+    // 名前が数値だけの場合はスキップ（タイムが名前列に来た場合の保険）
+    if(/^[\d.]+$/.test(ns))continue;
+    var vals=dateCols.map(function(dc){var v=r[dc.colIdx];if(v===null||v===undefined||v==='')return null;var n=parseFloat(v);return isNaN(n)||n<=0?null:+n.toFixed(2);});
+    if(vals.some(function(v){return v!==null;}))players[ns]=vals;
+  }
+  return{dates:dateCols,players:players};
+}
+function buildRunTable(key,sheetName,data){
+  var tableId='run-'+key+'-table';
+  var el=document.getElementById(tableId);
+  if(!el)return;
+  var dates=data.dates,players=data.players;
+  var shorts=dates.map(function(d){return d.short;});
+  var names=Object.keys(players).sort();
+
+  // 各選手のベストタイム
+  var bestOf={}; 
+  names.forEach(function(p){
+    var vs=players[p].filter(function(v){return v!==null;});
+    bestOf[p]=vs.length>0?Math.min.apply(null,vs):null;
+  });
+  // 各日付のチーム平均
+  var avgRow=dates.map(function(_,j){
+    var vs=names.map(function(p){return players[p][j];}).filter(function(v){return v!==null;});
+    return vs.length>0?+(vs.reduce(function(a,b){return a+b;},0)/vs.length).toFixed(2):null;
+  });
+
+  var thead='<tr><th style="text-align:left;position:sticky;left:0;background:var(--surface2);z-index:1">選手</th>';
+  shorts.forEach(function(s){thead+='<th>'+s+'</th>';});
+  thead+='<th style="color:var(--accent)">ベスト</th></tr>';
+
+  var tbody='';
+  names.forEach(function(p){
+    var best=bestOf[p];
+    tbody+='<tr><td class="td-left" style="position:sticky;left:0;background:var(--surface);z-index:1;font-size:12px">'+p+'</td>';
+    players[p].forEach(function(v,j){
+      if(v===null){tbody+='<td style="color:var(--muted)">—</td>';return;}
+      var isBest=(v===best);
+      var prev=null;
+      for(var k=j-1;k>=0;k--){if(players[p][k]!==null){prev=players[p][k];break;}}
+      var bg='',color='';
+      if(isBest){bg='rgba(255,165,0,0.18)';color='#ffa500';}
+      else if(prev!==null&&v<prev){bg='rgba(52,209,122,0.12)';color='var(--good)';}
+      else if(prev!==null&&v>prev){bg='rgba(247,107,107,0.10)';color='var(--bad)';}
+      var mark=isBest?'🏅 ':'';
+      tbody+='<td style="background:'+bg+';color:'+color+';font-weight:'+(isBest?'700':'400')+'">'+mark+v.toFixed(2)+'</td>';
+    });
+    // ベスト列
+    tbody+='<td style="color:var(--accent);font-weight:700">'+(best!==null?best.toFixed(2):'—')+'</td>';
+    tbody+='</tr>';
+  });
+
+  // チーム平均行
+  tbody+='<tr style="background:rgba(255,255,255,0.04);border-top:1px solid var(--border2)">';
+  tbody+='<td class="td-left" style="position:sticky;left:0;background:rgba(30,33,50,0.95);z-index:1;color:var(--accent);font-weight:600;font-size:12px">チーム平均</td>';
+  avgRow.forEach(function(v){
+    tbody+='<td style="color:var(--accent);font-weight:600">'+(v!==null?v.toFixed(2):'—')+'</td>';
+  });
+  var allVals=avgRow.filter(function(v){return v!==null;});
+  var avgBest=allVals.length>0?Math.min.apply(null,allVals):null;
+  tbody+='<td style="color:var(--accent);font-weight:700">'+(avgBest!==null?avgBest.toFixed(2):'—')+'</td>';
+  tbody+='</tr>';
+
+  el.innerHTML='<table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table>';
+  el.style.display='block';
+}
+function buildRunLineChart(key,canvasId,legendId,data){
+  var dates=data.dates,players=data.players;
+  var shorts=dates.map(function(d){return d.short;});
+  var names=Object.keys(players).sort();
+  var teamAvg=dates.map(function(_,j){
+    var vs=names.map(function(p){return players[p][j];}).filter(function(v){return v!==null;});
+    return vs.length>0?+(vs.reduce(function(a,b){return a+b;},0)/vs.length).toFixed(2):null;
+  });
+  var datasets=names.map(function(p,i){
+    var col=RUN_COLORS[i%RUN_COLORS.length];
+    return{label:p,data:players[p].map(function(v,j){return v!==null?{x:j,y:v}:null;}).filter(Boolean),
+      borderColor:col+'bb',backgroundColor:col+'bb',borderWidth:1.5,borderDash:RUN_DASHES[i%RUN_DASHES.length],
+      pointRadius:4,pointHoverRadius:6,tension:0.3,spanGaps:false,hidden:!!runHidden[key][p],order:2};
+  });
+  datasets.push({label:'チーム平均',
+    data:teamAvg.map(function(v,j){return v!==null?{x:j,y:v}:null;}).filter(Boolean),
+    borderColor:'#fff',backgroundColor:'#fff',borderWidth:3,borderDash:[],
+    pointRadius:5,pointHoverRadius:8,pointBackgroundColor:'#fff',pointBorderColor:'#0f1117',pointBorderWidth:2,
+    tension:0.3,spanGaps:false,hidden:false,order:1});
+  var ctx=document.getElementById(canvasId);
+  if(runCharts[key])runCharts[key].destroy();
+  runCharts[key]=new Chart(ctx,{type:'line',data:{datasets:datasets},options:{
+    responsive:true,maintainAspectRatio:false,animation:{duration:300},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d27',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+      titleColor:'#7a7f99',bodyColor:'#e8eaf0',
+      callbacks:{
+        title:function(items){return shorts[items[0].parsed.x]||'';},
+        label:function(item){return(item.dataset.label==='チーム平均'?'★ チーム平均':'   '+item.dataset.label)+'：'+item.parsed.y.toFixed(2)+'秒';}
+      }}},
+    scales:{
+      x:{type:'linear',min:0,max:Math.max(0,dates.length-1),
+        ticks:{stepSize:1,callback:function(v){return shorts[v]||'';},autoSkip:false,maxRotation:45,color:'#7a7f99',font:{size:10}},
+        grid:{color:'rgba(255,255,255,.04)'},border:{color:'rgba(255,255,255,.08)'}},
+      y:{ticks:{color:'#7a7f99',font:{size:10},callback:function(v){return v.toFixed(1)+' 秒';}},
+        grid:{color:'rgba(255,255,255,.04)'},border:{color:'rgba(255,255,255,.08)'}}
+    }
+  }});
+  var area=document.getElementById(legendId);area.innerHTML='';
+  names.forEach(function(p,i){
+    var col=RUN_COLORS[i%RUN_COLORS.length];
+    var el=document.createElement('span');
+    el.className='leg'+(runHidden[key][p]?' off':'');
+    el.innerHTML='<span class="leg-sw" style="background:'+col+'"></span>'+p;
+    el.addEventListener('click',function(){
+      runHidden[key][p]=!runHidden[key][p];el.classList.toggle('off',runHidden[key][p]);
+      var ds=runCharts[key].data.datasets.find(function(d){return d.label===p;});
+      if(ds){ds.hidden=runHidden[key][p];runCharts[key].update();}
+    });
+    area.appendChild(el);
+  });
+}
+</script>
+<div id="bottom-nav">
+  <div class="bn-item active" onclick="showPage('results')"><span class="bn-icon">🏆</span>試合</div>
+  <div class="bn-item" onclick="showPage('batting')"><span class="bn-icon">⚾</span>打撃</div>
+  <div class="bn-item" onclick="showPage('pitching')"><span class="bn-icon">⚾</span>投手</div>
+  <div class="bn-item" onclick="showPage('players')"><span class="bn-icon">👤</span>選手</div>
+  <div class="bn-item" onclick="showPage('running')"><span class="bn-icon">🏃</span>走塁</div>
+  <div class="bn-item" onclick="showPage('ai')"><span class="bn-icon">🤖</span>AI</div>
+</div>
+</body>
+</html>
