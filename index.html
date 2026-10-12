@@ -1065,7 +1065,8 @@ function buildInputCache(){
 }
 function calcCumulative(statKey, logs){
   const pitchStats=['失点率','奪三振率','被安打率','与四死球率','K/BB','WHIP'];
-  function mmddSort(a,b){const f=s=>{const[m,d]=s.split('/').map(Number);return(m>=9?m:m+12)*100+d;};return f(a)-f(b);}
+  // 打撃・投手の成績は1月始まりのシーズンなので月日順に並べる（9月始まりで並べると9/5以降が先頭に来ていた）
+  function mmddSort(a,b){const f=s=>{const[m,d]=s.split('/').map(Number);return m*100+d;};return f(a)-f(b);}
   const dates=[...new Set(logs.map(l=>l.date).filter(Boolean))].sort(mmddSort);
   const players=[...new Set(logs.map(l=>l.player))].sort();
   function calcStat(c,key){
